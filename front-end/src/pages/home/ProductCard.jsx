@@ -28,7 +28,7 @@ export default function ProductCard() {
                         <span><svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g id="evaCheckmarkFill0"><g id="evaCheckmarkFill1"><path id="evaCheckmarkFill2" d="M9.86 18a1 1 0 0 1-.73-.32l-4.86-5.17a1 1 0 1 1 1.46-1.37l4.12 4.39l8.41-9.2a1 1 0 1 1 1.48 1.34l-9.14 10a1 1 0 0 1-.73.33Z" /></g></g></svg></span>
                         <span>Added</span>
                     </div>
-                    <button className="text-white shadow-md bg-[#198754] hover:bg-[#198754]/80 active:bg-[#198754] py-2 text-[14px] cursor-pointer rounded-md leading-none">Add to Cart</button>
+                    <button className="btn-primary py-2">Add to Cart</button>
                 </div>
             </div>
         </div>

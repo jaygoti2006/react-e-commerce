@@ -12,8 +12,35 @@ export default function Checkout() {
                     <div className="grow">
                         <CheckoutItem />
                     </div>
-                    <div className="w-87.5">
-
+                    <div className="w-87.5 p-4 flex flex-col gap-2 border border-neutral-300 rounded-md">
+                        <h4 className="text-[19px] font-bold">Payment Summary</h4>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1.5">
+                                <div className="flex justify-between">
+                                    <span>Items (7):</span>
+                                    <span>$86.35</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Shipping & handling:</span>
+                                    <span>$9.99</span>
+                                </div>
+                                <div className="self-end border-t border-neutral-300 w-12"></div>
+                                <div className="flex justify-between">
+                                    <span>Total before tax:</span>
+                                    <span>$96.34</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Estimated tax (10%):</span>
+                                    <span>$9.63</span>
+                                </div>
+                            </div>
+                            <div className="border-t border-neutral-300"></div>
+                            <div className="flex justify-between text-green-700 font-bold text-lg py-2">
+                                <span>Order total:</span>
+                                <span>$9.63</span>
+                            </div>
+                            <button className="btn-primary py-3.5">Place your order</button>
+                        </div>
                     </div>
                 </div>
             </div>

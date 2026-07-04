@@ -16,3 +16,9 @@ body{
     margin-top: 61.6px;
     font-family: 'Roboto';
 }
+
+@layer components{
+    .btn-primary{
+        @apply text-white shadow-md bg-[#198754] hover:bg-[#198754]/80 active:bg-[#198754] text-[14px] cursor-pointer rounded-md leading-none;
+    }
+}

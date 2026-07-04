@@ -15,34 +15,34 @@ export default function CheckoutItem(){
                         </div>
                     </div>
                 </div>
-                <div className="w-75 flex flex-col gap-2">
-                    <h6 className="font-bold">Choose a delivery option:</h6>
+                <fieldset className="w-75 flex flex-col gap-2">
+                    <legend className="font-bold">Choose a delivery option:</legend>
                     <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-2 hover:opacity-70 cursor-pointer">
+                        <label className="flex items-center gap-2 hover:opacity-70 cursor-pointer">
                             <input className="cursor-pointer w-5 h-5" type="radio" name="delivery-option"/>
                             <div className="flex flex-col gap-0.5">
                                 <span className="font-medium">Tuesday, July 14</span>
                                 <span className="text-neutral-500 leading-none"> <span>Free</span> - <span>Shipping</span> </span>
                             </div>
-                        </div>
+                        </label>
                         
-                        <div className="flex items-center gap-2 hover:opacity-70 cursor-pointer">
+                        <label className="flex items-center gap-2 hover:opacity-70 cursor-pointer">
                             <input className="cursor-pointer w-5 h-5" type="radio" name="delivery-option"/>
                             <div className="flex flex-col gap-0.5">
                                 <span className="font-medium">Tuesday, July 14</span>
                                 <span className="text-neutral-500 leading-none"> <span>Free</span> - <span>Shipping</span> </span>
                             </div>
-                        </div>
+                        </label>
 
-                        <div className="flex items-center gap-2 hover:opacity-70 cursor-pointer">
+                        <label className="flex items-center gap-2 hover:opacity-70 cursor-pointer">
                             <input className="cursor-pointer w-5 h-5" type="radio" name="delivery-option"/>
                             <div className="flex flex-col gap-0.5">
                                 <span className="font-medium">Tuesday, July 14</span>
                                 <span className="text-neutral-500 leading-none"> <span>Free</span> - <span>Shipping</span> </span>
                             </div>
-                        </div>
+                        </label>
                     </div>
-                </div>
+                </fieldset>
             </div>
         </div>
     );
