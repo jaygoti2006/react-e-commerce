@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+    --breakpoint-xs : 32rem
+}
+
+*:focus{
+    @apply outline-none;
+}
+
+*:focus-visible{
+    @apply ring-2 ring-green-100;
+}
+
+body{
+    margin-top: 61.6px;
+    font-family: 'Roboto';
+}
