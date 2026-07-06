@@ -1,9 +1,11 @@
-import Header from "../../Header";
+import Header from "../../components/Header";
 import {Link} from "react-router";
 
 export default function Tracking(){
     return (
         <>
+            <title>Tracking</title>
+            <link rel="icon" href="tracking-favicon.png"></link>
             <Header />
             <div className="max-w-4xl px-4 mx-auto py-8 flex flex-col">
                 <Link to='/orders' className="underline text-green-700 hover:text-green-700/70 self-start">View all orders</Link>

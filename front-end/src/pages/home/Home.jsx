@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import Header from '../../Header';
+import Header from '../../components/Header';
 import ProductCard from './ProductCard';
 import { useSearchParams } from 'react-router';
 
@@ -30,6 +30,8 @@ export default function Home() {
 
     return (
         <>
+            <title>E Commerce App</title>
+            <link rel="icon" href="home-favicon.png"></link>
             <Header />
             <div className="grid grid-cols-2 divide-x-2 divide-y-2 divide-neutral-100 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {products.map((el) => {

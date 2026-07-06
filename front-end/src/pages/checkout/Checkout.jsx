@@ -5,6 +5,8 @@ import CheckoutItem from './CheckoutItem';
 export default function Checkout() {
     return (
         <>
+            <title>Checkout</title>
+            <link rel="icon" href="cart-favicon.png"></link>
             <CheckoutHeader />
             <div className="lg:max-w-6xl mx-auto px-3 py-15">
                 <h2 className="text-[22px] font-bold mb-4">Review your order</h2>
