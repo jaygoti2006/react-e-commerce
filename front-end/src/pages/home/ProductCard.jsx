@@ -1,16 +1,18 @@
-export default function ProductCard() {
+import convertMoney from '../../utils/money';
+
+export default function ProductCard({image,name,rating,priceCents}) {
     return (
         <div className="p-6">
             <div className="p-4">
-                <img className="w-full rounded-md" src="https://supersimple.dev/projects/ecommerce/images/products/intermediate-composite-basketball.jpg" alt="" />
+                <img className="w-full rounded-md" src={image} alt="" />
             </div>
             <div className="flex flex-col gap-2.5">
-                <h4>Intermediate Size Basketball</h4>
+                <h4>{name}</h4>
                 <div className="flex items-center gap-2">
-                    <img className="max-w-25" src="https://supersimple.dev/projects/ecommerce/images/ratings/rating-4.png" alt="" />
-                    <a href="" className="cursor-pointer text-green-700 hover:text-green-700/70 active:text-green-700">127</a>
+                    <img className="max-w-25" src={`/images/ratings/rating-${rating.stars*10}.png`} alt="" />
+                    <a href="" className="cursor-pointer text-green-700 hover:text-green-700/70 active:text-green-700">{rating.count}</a>
                 </div>
-                <span className="font-bold text-black">$20.95</span>
+                <span className="font-bold text-black">${convertMoney(priceCents)}</span>
                 <select className="self-start cursor-pointer border border-neutral-300 rounded-sm px-1 py-0.5 text-[15px] focus-visible:ring-green-700!" name="quantity">
                     <option value="1">1</option>
                     <option value="2">2</option>

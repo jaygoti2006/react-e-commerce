@@ -1,6 +1,39 @@
-import {Link} from 'react-router';
+import {Link,useNavigate} from 'react-router';
+import {useEffect, useRef,useState} from 'react';
+import { useSearchParams } from 'react-router';
 
 export default function Header() {
+    const [searchInput,setSearchInput]=useState("");
+    const navigate=useNavigate();
+    const searchBarRef=useRef(null);
+
+    const [params]=useSearchParams();
+    const search=(params.get("search"))?params.get("search"):"";
+
+    useEffect(()=>{
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSearchInput(search);
+    },[search,setSearchInput]);
+
+    function handleChange(){
+        setSearchInput(searchBarRef.current.value);
+    }
+
+    function handleSearch(){
+        if(searchInput!=""){
+            if(new URLSearchParams(location.search).get("search") != searchInput){
+                navigate({
+                    pathname: '',
+                    search: '?'+new URLSearchParams({"search":searchInput}).toString()
+                });
+            }
+        }else{
+            navigate({
+                pathname: '/'
+            });
+        }
+    }
+
     return (
         <div className="fixed z-10 top-0 left-0 right-0 py-2.5 px-2 flex xs:gap-5 md:gap-20 lg:gap-40 items-center justify-between bg-green-900">
             <Link to="/" className="text-white py-1 px-1 xs:px-4 flex items-center gap-2">
@@ -13,8 +46,8 @@ export default function Header() {
             <div className="flex grow min-w-0">
                 <input
                     className="min-w-0 border grow border-green-600 focus:border-green-700 rounded-lg rounded-r-none px-3 py-2 transition-all duration-300 bg-white shadow-sm focus:shadow-md"
-                    type="text" placeholder="Search products..." data-name="search" />
-                <button className=" relative focus-visible:z-[-1] flex items-center justify-center text-green-700 bg-green-200 border border-l-0 border-green-600 hover:border-green-700 hover:bg-green-200/85 active:border-green-600 active:bg-green-200 rounded-lg rounded-l-none px-4 py-2 transition-all duration-300 cursor-pointer">
+                    type="text" placeholder="Search products..." data-name="search" value={searchInput} onChange={handleChange} ref={searchBarRef}/>
+                <button onClick={handleSearch} className=" relative focus-visible:z-[-1] flex items-center justify-center text-green-700 bg-green-200 border border-l-0 border-green-600 hover:border-green-700 hover:bg-green-200/85 active:border-green-600 active:bg-green-200 rounded-lg rounded-l-none px-4 py-2 transition-all duration-300 cursor-pointer">
                     <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                         viewBox="0 0 24 24">
                         <path fillRule="evenodd"

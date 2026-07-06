@@ -7,7 +7,7 @@ import Tracking from './pages/tracking/Tracking';
 function App() {
   return (
     <Routes>
-      <Route path='/' element={<Home />} />
+      <Route path='/' element={<Home/>}/>
       <Route path='/orders' element={<Orders />}/>
       <Route path='/checkout' element={<Checkout />}/>
       <Route path='/tracking' element={<Tracking />} />
