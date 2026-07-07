@@ -33,7 +33,7 @@ export default function Home() {
             <link rel="icon" href="home-favicon.png"></link>
             <div className="grid grid-cols-2 divide-x-2 divide-y-2 divide-neutral-100 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {products.map((el) => {
-                    return <ProductCard image={el.image} name={el.name} rating={el.rating} priceCents={el.priceCents} key={el.id} />
+                    return <ProductCard image={el.image} name={el.name} rating={el.rating} priceCents={el.priceCents} key={el.id} id={el.id}/>
                 })}
             </div>
         </>

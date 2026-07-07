@@ -1,12 +1,11 @@
 import { Link } from 'react-router';
 import { useContext } from 'react';
 import cartContext from '../../contexts/CartContext';
-import CheckoutItem from './CheckoutItem';
 
 export default function CheckoutHeader() {
     const {itemsCount}=useContext(cartContext);
     return (
-        <div className="fixed z-10 top-0 left-0 right-0">
+        <div className="fixed z-10 top-0 left-0 right-0 bg-white">
             <div className="max-w-6xl mx-auto py-2.5 px-2 flex xs:gap-5 md:gap-20 lg:gap-40 items-center justify-between">
                 <div className="grow shrink max-w-50">
                     <Link to="/" className="text-green-700 py-1 flex items-center gap-2">

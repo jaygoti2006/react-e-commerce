@@ -1,12 +1,37 @@
 import convertMoney from '../../utils/money';
-import { useRef } from 'react';
+import { useContext, useRef } from 'react';
+import CartContext from '../../contexts/CartContext';
 
-export default function ProductCard({image,name,rating,priceCents}) {
-    const addedLabelRef=useRef(null);
-    function handleAdd(){
-        addedLabelRef.current.style.opacity=1;
-        setTimeout(()=>{addedLabelRef.current.style.opacity=0;},2000);
+export default function ProductCard({ image, name, rating, priceCents, id }) {
+    const addedLabelRef = useRef(null);
+    const quantityRef = useRef(null);
+    const {getCartItems} = useContext(CartContext);
+
+    async function addToCart(uuid, quantity) {
+        try {
+            const res = await fetch("/api/cart-items", {
+                method: "POST", 
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "productId": uuid,
+                    "quantity": Number(quantity)
+                })
+            });
+            if (!res.ok) {
+                console.error(res.status);
+            } else getCartItems();
+        } catch (e) {
+            console.error(e);
+        }
     }
+    function handleAdd() {
+        addedLabelRef.current.style.opacity = 1;
+        setTimeout(() => { addedLabelRef.current.style.opacity = 0; }, 2000);
+        addToCart(id, quantityRef.current.value);
+    }
+
     return (
         <div className="p-6">
             <div className="p-4">
@@ -15,11 +40,11 @@ export default function ProductCard({image,name,rating,priceCents}) {
             <div className="flex flex-col gap-2.5">
                 <h4 className="line-clamp-2 h-12">{name}</h4>
                 <div className="flex items-center gap-2">
-                    <img className="max-w-25" src={`/images/ratings/rating-${rating.stars*10}.png`} alt="" />
+                    <img className="max-w-25" src={`/images/ratings/rating-${rating.stars * 10}.png`} alt="" />
                     <a href="" className="cursor-pointer text-green-700 hover:text-green-700/70 active:text-green-700">{rating.count}</a>
                 </div>
                 <span className="font-bold text-black">${convertMoney(priceCents)}</span>
-                <select className="self-start cursor-pointer border border-neutral-300 rounded-sm px-1 py-0.5 text-[15px] focus-visible:ring-green-700!" name="quantity">
+                <select className="self-start cursor-pointer border border-neutral-300 rounded-sm px-1 py-0.5 text-[15px] focus-visible:ring-green-700!" name="quantity" ref={quantityRef}>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
