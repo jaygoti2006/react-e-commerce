@@ -1,8 +1,28 @@
 import CheckoutHeader from './CheckoutHeader';
-import CheckoutItem from './CheckoutItem';
-
+import { useCallback, useEffect, useState } from 'react';
 
 export default function Checkout() {
+    const [deliveryOptions,setDeliveryOptions]=useState([]);
+
+    const getDeliveryOptions=useCallback(async function(){
+        try {
+            const res = await fetch("/api/delivery-options?" + new URLSearchParams({
+                "expand": "estimatedDeliveryTime"
+            }).toString());
+            if (res.ok) {
+                const data = await res.json();
+                setDeliveryOptions(data);
+            } else console.error(res.status);
+        } catch (e) {
+            console.error(e);
+        }
+    },[]);
+
+    useEffect(()=>{
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        getDeliveryOptions();
+    },[getDeliveryOptions]);
+
     return (
         <>
             <title>Checkout</title>
@@ -12,7 +32,7 @@ export default function Checkout() {
                 <h2 className="text-[22px] font-bold mb-4">Review your order</h2>
                 <div className="flex gap-2">
                     <div className="grow">
-                        <CheckoutItem />
+                        []
                     </div>
                     <div className="w-87.5 p-4 flex flex-col gap-2 border border-neutral-300 rounded-md">
                         <h4 className="text-[19px] font-bold">Payment Summary</h4>

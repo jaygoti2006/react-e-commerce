@@ -1,33 +1,36 @@
-import {Link,useNavigate} from 'react-router';
-import {useEffect, useRef,useState} from 'react';
+import { Link, useNavigate } from 'react-router';
+import { useEffect, useRef, useState, useContext } from 'react';
 import { useSearchParams } from 'react-router';
+import CartContext from '../contexts/CartContext';
 
 export default function Header() {
-    const [searchInput,setSearchInput]=useState("");
-    const navigate=useNavigate();
-    const searchBarRef=useRef(null);
+    const [searchInput, setSearchInput] = useState("");
+    const navigate = useNavigate();
+    const searchBarRef = useRef(null);
 
-    const [params]=useSearchParams();
-    const search=(params.get("search"))?params.get("search"):"";
+    const [params] = useSearchParams();
+    const search = (params.get("search")) ? params.get("search") : "";
 
-    useEffect(()=>{
+    const {itemsCount}=useContext(CartContext);
+
+    useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setSearchInput(search);
-    },[search,setSearchInput]);
+    }, [search, setSearchInput]);
 
-    function handleChange(){
+    function handleChange() {
         setSearchInput(searchBarRef.current.value);
     }
 
-    function handleSearch(){
-        if(searchInput!=""){
-            if(new URLSearchParams(location.search).get("search") != searchInput){
+    function handleSearch() {
+        if (searchInput != "") {
+            if (new URLSearchParams(location.search).get("search") != searchInput) {
                 navigate({
                     pathname: '',
-                    search: '?'+new URLSearchParams({"search":searchInput}).toString()
+                    search: '?' + new URLSearchParams({ "search": searchInput }).toString()
                 });
             }
-        }else{
+        } else {
             navigate({
                 pathname: '/'
             });
@@ -46,7 +49,7 @@ export default function Header() {
             <div className="flex grow min-w-0">
                 <input
                     className="min-w-0 border grow border-green-600 focus:border-green-700 rounded-lg rounded-r-none px-3 py-2 transition-all duration-300 bg-white shadow-sm focus:shadow-md"
-                    type="text" placeholder="Search products..." data-name="search" value={searchInput} onChange={handleChange} ref={searchBarRef}/>
+                    type="text" placeholder="Search products..." data-name="search" value={searchInput} onChange={handleChange} ref={searchBarRef} />
                 <button onClick={handleSearch} className=" relative focus-visible:z-[-1] flex items-center justify-center text-green-700 bg-green-200 border border-l-0 border-green-600 hover:border-green-700 hover:bg-green-200/85 active:border-green-600 active:bg-green-200 rounded-lg rounded-l-none px-4 py-2 transition-all duration-300 cursor-pointer">
                     <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                         viewBox="0 0 24 24">
@@ -61,8 +64,8 @@ export default function Header() {
                 <Link to="/orders" className="flex items-center px-1 xs:px-3 py-2">Orders</Link>
                 <Link to="/checkout" className="flex items-center px-1 xs:px-3">
                     <span className="relative">
-                        <svg className="block fill-current" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><path fillRule="evenodd" d="M9.5 19.5a1 1 0 1 0 0-2a1 1 0 0 0 0 2m0 1a2 2 0 1 0 0-4a2 2 0 0 0 0 4m7-1a1 1 0 1 0 0-2a1 1 0 0 0 0 2m0 1a2 2 0 1 0 0-4a2 2 0 0 0 0 4M3 4a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .476.348L9.37 14.5H17a.5.5 0 0 1 0 1H9.004a.5.5 0 0 1-.476-.348L5.135 4.5H3.5A.5.5 0 0 1 3 4" clipRule="evenodd"/><path d="M8.5 13L6 6h13.337a.5.5 0 0 1 .48.637l-1.713 6a.5.5 0 0 1-.481.363z"/></svg>
-                        <span className="absolute top-[50%] left-[50%] translate-x-[-40%] translate-y-[-70%] text-green-700 text-[12px]">1</span>
+                        <svg className="block fill-current" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><path fillRule="evenodd" d="M9.5 19.5a1 1 0 1 0 0-2a1 1 0 0 0 0 2m0 1a2 2 0 1 0 0-4a2 2 0 0 0 0 4m7-1a1 1 0 1 0 0-2a1 1 0 0 0 0 2m0 1a2 2 0 1 0 0-4a2 2 0 0 0 0 4M3 4a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .476.348L9.37 14.5H17a.5.5 0 0 1 0 1H9.004a.5.5 0 0 1-.476-.348L5.135 4.5H3.5A.5.5 0 0 1 3 4" clipRule="evenodd" /><path d="M8.5 13L6 6h13.337a.5.5 0 0 1 .48.637l-1.713 6a.5.5 0 0 1-.481.363z" /></svg>
+                        <span className="absolute top-[50%] left-[50%] translate-x-[-40%] translate-y-[-70%] text-green-700 text-[12px]">{itemsCount}</span>
                     </span>
                     <span className="py-2">Cart</span>
                 </Link>

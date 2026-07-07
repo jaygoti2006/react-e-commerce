@@ -4,16 +4,22 @@ import Orders from './pages/orders/Orders';
 import Checkout from './pages/checkout/Checkout';
 import Tracking from './pages/tracking/Tracking';
 import ErrorNotFound from './pages/ErrorNotFound';
+import { CartContextProvider } from './contexts/CartContext';
+import Layout from './components/Layout';
 
 function App() {
   return (
-    <Routes>
-      <Route path='/' element={<Home/>}/>
-      <Route path='/orders' element={<Orders />}/>
-      <Route path='/checkout' element={<Checkout />}/>
-      <Route path='/tracking' element={<Tracking />}/>
-      <Route path='/*' element={<ErrorNotFound/>}></Route>
-    </Routes>
+    <CartContextProvider>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path='/' element={<Home />} />
+          <Route path='/orders' element={<Orders />} />
+          <Route path='/tracking' element={<Tracking />} />
+        </Route>
+        <Route path='/checkout' element={<Checkout />} />
+        <Route path='/*' element={<ErrorNotFound />}></Route>
+      </Routes>
+    </CartContextProvider>
   )
 }
 
