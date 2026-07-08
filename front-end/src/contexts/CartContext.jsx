@@ -1,39 +1,42 @@
 import { createContext, useEffect, useState, useCallback } from "react";
 
-const CartContext=createContext();
+const CartContext = createContext();
 
 export default CartContext;
 
-export function CartContextProvider({children}){
-    const [cartItems,setCartItems]=useState([]);
+export function CartContextProvider({ children }) {
+    const [cart, setCart] = useState({
+        items: [],
+        count: 0
+    });
 
-    const getCartItems=useCallback(async function(){
-            try {
-                const res = await fetch("/api/cart-items?" + new URLSearchParams({
-                    "expand": "product"
-                }).toString());
-                if (res.ok) {
-                    const data = await res.json();
-                    setCartItems(data);
-                } else console.error(res.status);
-            } catch (e) {
-                console.error(e);
-            }
-    },[]);
+    const getCartItems = useCallback(async function () {
+        try {
+            const res = await fetch("/api/cart-items?" + new URLSearchParams({
+                "expand": "product"
+            }).toString());
+            if (res.ok) {
+                const data = await res.json();
+                let c = 0;
+                for (let el of data) c += el.quantity;
+                setCart({items:data, count:c});
+            } else console.error(res.status);
+        } catch (e) {
+            console.error(e);
+        }
+    }, []);
 
-    useEffect(()=>{
+    useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getCartItems();
-    },[getCartItems]);
-
-    let c=0;
-    for(let el of cartItems) c+=el.quantity; 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <CartContext value={{
             getCartItems,
-            cartItems,
-            itemsCount: c
+            cart,
+            setCart
         }}>
             {children}
         </CartContext>

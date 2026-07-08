@@ -21,4 +21,7 @@ body{
     .btn-primary{
         @apply text-white shadow-md bg-[#198754] hover:bg-[#198754]/80 active:bg-[#198754] text-[14px] cursor-pointer rounded-md leading-none;
     }
+    .btn-primary[disabled]{
+        @apply bg-[#198754]/60 cursor-not-allowed;
+    }
 }
