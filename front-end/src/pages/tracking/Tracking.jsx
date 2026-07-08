@@ -3,35 +3,22 @@ import { Link, useSearchParams } from "react-router";
 import OrdersContext from "../../contexts/OrdersContext";
 
 export default function Tracking() {
-    const [ searchParams ] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const { orders } = useContext(OrdersContext);
     const progressRef = useRef(null);
 
-    const product=useRef(undefined);
+    const product = orders.find(order => order.id === searchParams.get("orderId"))?.products.find(
+        product => product.productId === searchParams.get("productId")
+    );
 
-    useEffect(()=>{
-        if(product.current) {
-            if(Number(Date.now()) > Number(product.current.estimatedDeliveryTimeMs)) progressRef.current.style.width="90%";
-            else progressRef.current.style.width="10%";
+    useEffect(() => {
+        if (product) {
+            if (Number(Date.now()) > Number(product.estimatedDeliveryTimeMs)) progressRef.current.style.width = "90%";
+            else progressRef.current.style.width = "10%";
         }
-    },[product.current]);
+    }, [product]);
 
-    if (!searchParams.has("orderId") || !searchParams.has("productId")) return <></>;
-    
-    orders.forEach((el) => {
-        if (el.id === searchParams.get("orderId")) {
-            el.products.forEach((el1) => {
-                if (el1.productId === searchParams.get("productId")) {
-                    product.current = el1;
-                    return;
-                }
-            });
-            return;
-        }
-    });
-
-    if(!product.current) return <></>;
-    
+    if (!searchParams.has("orderId") || !searchParams.has("productId") || !product) return <></>;
 
     return (
         <>
@@ -40,12 +27,12 @@ export default function Tracking() {
             <div className="max-w-4xl px-4 mx-auto py-8 flex flex-col">
                 <Link to='/orders' className="underline text-green-700 hover:text-green-700/70 self-start">View all orders</Link>
                 <div className="flex flex-col gap-3 py-6 mb-7">
-                    <h2 className="font-bold text-2xl">Arriving on {new Date(product.current.estimatedDeliveryTimeMs).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</h2>
+                    <h2 className="font-bold text-2xl">Arriving on {new Date(product.estimatedDeliveryTimeMs).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</h2>
                     <div className="flex flex-col leading-none gap-1.5 mb-4">
-                        <h4>{product.current.product.name}</h4>
-                        <span>Quantity: {product.current.quantity}</span>
+                        <h4>{product.product.name}</h4>
+                        <span>Quantity: {product.quantity}</span>
                     </div>
-                    <img className="w-37.5" src={product.current.product.image} alt="" />
+                    <img className="w-37.5" src={product.product.image} alt="" />
                 </div>
                 <div className="flex flex-col gap-3.5">
                     <div className="flex justify-between">
