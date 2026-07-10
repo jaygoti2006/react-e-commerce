@@ -11,7 +11,7 @@ export default function Header() {
     const [params] = useSearchParams();
     const search = (params.get("search")) ? params.get("search") : "";
 
-    const {cart}=useContext(CartContext);
+    const { cart } = useContext(CartContext);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -22,18 +22,20 @@ export default function Header() {
         setSearchInput(searchBarRef.current.value);
     }
 
-    function handleSearch() {
-        if (searchInput != "") {
-            if (new URLSearchParams(location.search).get("search") != searchInput) {
+    function handleSearch(e) {
+        if (e.type === "click" || (e.type === "keydown" && e.key === "Enter")) {
+            if (searchInput != "") {
+                if (new URLSearchParams(location.search).get("search") != searchInput) {
+                    navigate({
+                        pathname: '/',
+                        search: '?' + new URLSearchParams({ "search": searchInput }).toString()
+                    });
+                }
+            } else {
                 navigate({
-                    pathname: '/',
-                    search: '?' + new URLSearchParams({ "search": searchInput }).toString()
+                    pathname: '/'
                 });
             }
-        } else {
-            navigate({
-                pathname: '/'
-            });
         }
     }
 
@@ -49,7 +51,7 @@ export default function Header() {
             <div className="flex grow min-w-0">
                 <input
                     className="min-w-0 border grow border-green-600 focus:border-green-700 rounded-lg rounded-r-none px-3 py-2 transition-all duration-300 bg-white shadow-sm focus:shadow-md"
-                    type="text" placeholder="Search products..." data-name="search" value={searchInput} onChange={handleChange} ref={searchBarRef} />
+                    type="text" placeholder="Search products..." data-name="search" value={searchInput} onChange={handleChange} ref={searchBarRef} onKeyDown={handleSearch} />
                 <button onClick={handleSearch} className=" relative focus-visible:z-[-1] flex items-center justify-center text-green-700 bg-green-200 border border-l-0 border-green-600 hover:border-green-700 hover:bg-green-200/85 active:border-green-600 active:bg-green-200 rounded-lg rounded-l-none px-4 py-2 transition-all duration-300 cursor-pointer">
                     <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                         viewBox="0 0 24 24">
