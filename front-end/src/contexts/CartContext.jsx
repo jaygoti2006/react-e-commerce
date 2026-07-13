@@ -32,16 +32,18 @@ export function CartContextProvider({ children }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    async function updateCartItem(product, quantity) {
+    async function updateCartItem(product, options) {
         try {
+            const obj={};
+            if(options.quantity) obj.quantity=options.quantity;
+            if(options.dId) obj.deliveryOptionId=options.dId;
+
             const res = await fetch(`/api/cart-items/${product.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    "quantity": Number(quantity)
-                })
+                body: JSON.stringify(obj)
             });
             if (res.ok) {
                 const data = await res.json();

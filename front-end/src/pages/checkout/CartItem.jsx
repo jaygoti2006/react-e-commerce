@@ -4,7 +4,7 @@ import DeliveryOption from './DeliveryOption';
 import getDate from '../../utils/getDate';
 import CartContext from '../../contexts/CartContext';
 
-export default function CartItem({ product, quantity, deliveryOptionId, deliveryOptions }) {
+export default function CartItem({ cartItem: {product, quantity, deliveryOptionId}, deliveryOptions }) {
     const { updateCartItem, deleteCartItem } = useContext(CartContext);
     const [updateEnable, setUpdateEnable] = useState(false);
     const updateInputRef = useRef(null);
@@ -44,7 +44,7 @@ export default function CartItem({ product, quantity, deliveryOptionId, delivery
                     <legend className="font-bold">Choose a delivery option:</legend>
                     <div className="flex flex-col gap-3">
                         {deliveryOptions.map((el) => {
-                            return <DeliveryOption product={product} priceCents={el.priceCents} date={getDate(el.deliveryDays)} id={el.id} key={el.id} currDeliveryOption={currDeliveryOption} />;
+                            return <DeliveryOption deliveryOption={el} product={product} key={el.id} currDeliveryOption={currDeliveryOption} />;
                         })}
                     </div>
                 </fieldset>

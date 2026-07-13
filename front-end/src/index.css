@@ -27,4 +27,7 @@ body{
     .btn-secondary{
         @apply shadow-md border border-neutral-700 hover:bg-neutral-200 active:bg-[white] text-[14px] cursor-pointer rounded-md leading-none;
     }
+    .btn-tertiary{
+        @apply shadow-md border border-[#198754] text-[#198754] hover:bg-[#198754]/10 active:bg-[white] text-[14px] cursor-pointer rounded-md leading-none;
+    }
 }

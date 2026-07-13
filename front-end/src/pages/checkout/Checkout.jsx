@@ -8,7 +8,6 @@ import PaymentSummary from './PaymentSummary';
 export default function Checkout() {
     const [deliveryOptions, setDeliveryOptions] = useState([]);
     const { cart, setCart } = useContext(CartContext);
-    
 
     const getDeliveryOptions = useCallback(async function () {
         try {
@@ -86,7 +85,7 @@ export default function Checkout() {
                         :
                         <div className="flex flex-col grow gap-3">
                             {cart.items.map((el) => {
-                                return (<CartItem product={el.product} quantity={el.quantity} deliveryOptionId={el.deliveryOptionId} deliveryOptions={deliveryOptions} key={el.productId} />);
+                                return (<CartItem cartItem={el} deliveryOptions={deliveryOptions} key={el.productId} />);
                             })}
                         </div>
                     }

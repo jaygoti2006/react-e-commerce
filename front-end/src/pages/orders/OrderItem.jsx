@@ -2,7 +2,7 @@ import { useContext, useRef } from 'react';
 import { Link } from 'react-router';
 import CartContext from '../../contexts/CartContext';
 
-export default function OrderItem({ id,product, quantity, deliveryTime }) {
+export default function OrderItem({ id, product : {product, quantity, estimatedDeliveryTimeMs} }) {
     const { getCartItems } = useContext(CartContext);
     const addBtnRef = useRef(null);
     async function addToCart() {
@@ -47,7 +47,7 @@ export default function OrderItem({ id,product, quantity, deliveryTime }) {
                 <div className="flex flex-col">
                     <h4 className="font-bold">{product.name}</h4>
                     <span>
-                        Arriving on: {new Date(deliveryTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                        Arriving on: {new Date(estimatedDeliveryTimeMs).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                     </span>
                     <span>
                         Quantity: {quantity}
