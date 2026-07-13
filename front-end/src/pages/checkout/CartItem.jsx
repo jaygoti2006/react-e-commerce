@@ -5,7 +5,7 @@ import getDate from '../../utils/getDate';
 import CartContext from '../../contexts/CartContext';
 
 export default function CartItem({ product, quantity, deliveryOptionId, deliveryOptions }) {
-    const { cart, setCart } = useContext(CartContext);
+    const { updateCartItem, deleteCartItem } = useContext(CartContext);
     const [updateEnable, setUpdateEnable] = useState(false);
     const updateInputRef = useRef(null);
     const currDeliveryOption = useMemo(()=>{
@@ -14,51 +14,13 @@ export default function CartItem({ product, quantity, deliveryOptionId, delivery
         return res[0];
     },[deliveryOptionId,deliveryOptions]);
 
-    async function updateCartItem() {
-        try {
-            const res = await fetch(`/api/cart-items/${product.id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    "quantity": Number(updateInputRef.current.value)
-                })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setCart({
-                    items: cart.items.map((el) => {
-                        if(el.productId !== product.id) return el;
-                        return {...data,product};
-                    }),
-                    count: cart.count
-                });
-            } else console.error(res.status);
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
     function handleUpdate() {
         setUpdateEnable(!updateEnable);
-        if (updateEnable) updateCartItem();
+        if (updateEnable) updateCartItem(product,updateInputRef.current.value);
     }
 
-    async function handleDelete() {
-        try {
-            const res = await fetch(`/api/cart-items/${product.id}`, {
-                method: "DELETE"
-            });
-            if (res.ok) {
-                setCart({
-                    items: cart.items.filter((el) => { return el.productId !== product.id; }),
-                    count: cart.count - quantity
-                });
-            } else console.error(res.status);
-        } catch (e) {
-            console.error(e);
-        }
+    function handleDelete() {
+        deleteCartItem(product.id,quantity);
     }
 
     return (

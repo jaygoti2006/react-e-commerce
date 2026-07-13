@@ -8,6 +8,7 @@ import PaymentSummary from './PaymentSummary';
 export default function Checkout() {
     const [deliveryOptions, setDeliveryOptions] = useState([]);
     const { cart, setCart } = useContext(CartContext);
+    
 
     const getDeliveryOptions = useCallback(async function () {
         try {

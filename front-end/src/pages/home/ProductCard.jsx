@@ -1,36 +1,35 @@
 import convertMoney from '../../utils/money';
-import { useContext, useRef } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import CartContext from '../../contexts/CartContext';
 
-export default function ProductCard({product : { image, name, rating, priceCents, id}}) {
-    const addedLabelRef = useRef(null);
-    const quantityRef = useRef(null);
-    const {getCartItems} = useContext(CartContext);
-    
+const limit = 10;
 
-    async function addToCart(uuid, quantity) {
-        try {
-            const res = await fetch("/api/cart-items", {
-                method: "POST", 
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    "productId": uuid,
-                    "quantity": Number(quantity)
-                })
-            });
-            if (!res.ok) {
-                console.error(res.status);
-            } else getCartItems();
-        } catch (e) {
-            console.error(e);
+export default function ProductCard({ product: { image, name, rating, priceCents, id }, product }) {
+    const { cart, updateCartItem, deleteCartItem, addCartItem } = useContext(CartContext);
+    const [currQuantity, setCurrQuantity] = useState(()=>{
+        const t = cart.items.find((el) => el.productId === id);
+        if(t) return t.quantity;
+        return 0;
+    });
+
+    useEffect(() => {
+        const t = cart.items.find((el) => el.productId === id);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        if(t) setCurrQuantity(t.quantity);
+    },[cart,id]);
+
+    function handleAdd() {
+        if (currQuantity < limit) {
+            setCurrQuantity(currQuantity + 1);
+            if(currQuantity!==0) updateCartItem(product, currQuantity + 1);
+            else addCartItem(product,1);
         }
     }
-    function handleAdd() {
-        addedLabelRef.current.style.opacity = 1;
-        setTimeout(() => { addedLabelRef.current.style.opacity = 0; }, 2000);
-        addToCart(id, quantityRef.current.value);
+
+    function handleRemove() {
+        setCurrQuantity(currQuantity - 1);
+        if(currQuantity>1) updateCartItem(product, currQuantity - 1);
+        else deleteCartItem(product.id,1);
     }
 
     return (
@@ -45,24 +44,21 @@ export default function ProductCard({product : { image, name, rating, priceCents
                     <a href="" className="cursor-pointer text-green-700 hover:text-green-700/70 active:text-green-700">{rating.count}</a>
                 </div>
                 <span className="font-bold text-black">${convertMoney(priceCents)}</span>
-                <select className="self-start cursor-pointer border border-neutral-300 rounded-sm px-1 py-0.5 text-[15px] focus-visible:ring-green-700!" name="quantity" ref={quantityRef}>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                </select>
                 <div className="flex flex-col mt-2 gap-2">
-                    <div className="flex gap-1 items-center text-green-700 opacity-0" ref={addedLabelRef}>
-                        <span><svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g id="evaCheckmarkFill0"><g id="evaCheckmarkFill1"><path id="evaCheckmarkFill2" d="M9.86 18a1 1 0 0 1-.73-.32l-4.86-5.17a1 1 0 1 1 1.46-1.37l4.12 4.39l8.41-9.2a1 1 0 1 1 1.48 1.34l-9.14 10a1 1 0 0 1-.73.33Z" /></g></g></svg></span>
-                        <span>Added</span>
-                    </div>
-                    <button className="btn-primary py-2" onClick={handleAdd}>Add to Cart</button>
+                    { (currQuantity!==0) ?
+                    <div className="flex items-center bg-[#198754] rounded-md text-white self-start h-7.5">
+                        <button className="cursor-pointer pl-1" onClick={handleRemove}>
+                            <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 36 36"><path d="M26 17H10a1 1 0 0 0 0 2h16a1 1 0 0 0 0-2Z" className="clr-i-outline clr-i-outline-path-1" /><path fill="none" d="M0 0h36v36H0z" /></svg>
+                        </button>
+                        <span className="min-w-5 text-center">
+                            {currQuantity}
+                        </span>
+                        <button className="cursor-pointer pr-1 disabled:text-white/70" onClick={handleAdd} disabled={currQuantity===limit}>
+                            <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" /></svg>
+                        </button>
+                    </div> :
+                    <button className="h-7.5 btn-primary self-start px-4 text-[16px]" onClick={handleAdd}>Add</button>
+                    }
                 </div>
             </div>
         </div>
