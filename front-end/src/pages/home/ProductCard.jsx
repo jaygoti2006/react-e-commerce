@@ -2,10 +2,11 @@ import convertMoney from '../../utils/money';
 import { useContext, useRef } from 'react';
 import CartContext from '../../contexts/CartContext';
 
-export default function ProductCard({ image, name, rating, priceCents, id }) {
+export default function ProductCard({product : { image, name, rating, priceCents, id}}) {
     const addedLabelRef = useRef(null);
     const quantityRef = useRef(null);
     const {getCartItems} = useContext(CartContext);
+    
 
     async function addToCart(uuid, quantity) {
         try {

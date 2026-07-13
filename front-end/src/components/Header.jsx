@@ -1,10 +1,9 @@
 import { Link, useNavigate } from 'react-router';
-import { useEffect, useRef, useState, useContext } from 'react';
+import { useEffect, useRef, useContext } from 'react';
 import { useSearchParams } from 'react-router';
 import CartContext from '../contexts/CartContext';
 
 export default function Header() {
-    const [searchInput, setSearchInput] = useState("");
     const navigate = useNavigate();
     const searchBarRef = useRef(null);
 
@@ -14,28 +13,30 @@ export default function Header() {
     const { cart } = useContext(CartContext);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSearchInput(search);
-    }, [search, setSearchInput]);
-
-    function handleChange() {
-        setSearchInput(searchBarRef.current.value);
-    }
+        searchBarRef.current.value=search;
+    }, [search]);
 
     function handleSearch(e) {
-        if (e.type === "click" || (e.type === "keydown" && e.key === "Enter")) {
-            if (searchInput != "") {
-                if (new URLSearchParams(location.search).get("search") != searchInput) {
-                    navigate({
-                        pathname: '/',
-                        search: '?' + new URLSearchParams({ "search": searchInput }).toString()
-                    });
-                }
-            } else {
+        if(e.type==="keydown" && e.key==="Enter"){
+            searchBarRef.current.blur();
+            return;
+        }
+        const s = searchBarRef.current.value.trim();
+        if (s != "") {
+            if (new URLSearchParams(location.search).get("search") != s) {
                 navigate({
-                    pathname: '/'
+                    pathname: '/',
+                    search: '?' + new URLSearchParams({ "search": s }).toString()
+                },{
+                    replace: true
                 });
             }
+        } else {
+            navigate({
+                pathname: '/'
+            },{
+                replace: true
+            });
         }
     }
 
@@ -48,18 +49,16 @@ export default function Header() {
                 <span className="hidden sm:block font-semibold leading-none text-[20px]">ShopNow</span>
             </Link>
 
-            <div className="flex grow min-w-0">
+            <div className="flex grow min-w-0 relative">
+                <svg className="fill-current absolute top-[50%] translate-y-[-50%] left-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24">
+                    <path fillRule="evenodd"
+                        d="M14.385 15.446a6.751 6.751 0 1 1 1.06-1.06l5.156 5.155a.75.75 0 1 1-1.06 1.06l-5.156-5.155ZM6.46 13.884a5.25 5.25 0 1 1 7.43-.005l-.005.005l-.005.004a5.25 5.25 0 0 1-7.42-.004Z"
+                        clipRule="evenodd" />
+                </svg>
                 <input
-                    className="min-w-0 border grow border-green-600 focus:border-green-700 rounded-lg rounded-r-none px-3 py-2 transition-all duration-300 bg-white shadow-sm focus:shadow-md"
-                    type="text" placeholder="Search products..." data-name="search" value={searchInput} onChange={handleChange} ref={searchBarRef} onKeyDown={handleSearch} />
-                <button onClick={handleSearch} className=" relative focus-visible:z-[-1] flex items-center justify-center text-green-700 bg-green-200 border border-l-0 border-green-600 hover:border-green-700 hover:bg-green-200/85 active:border-green-600 active:bg-green-200 rounded-lg rounded-l-none px-4 py-2 transition-all duration-300 cursor-pointer">
-                    <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                        viewBox="0 0 24 24">
-                        <path fillRule="evenodd"
-                            d="M14.385 15.446a6.751 6.751 0 1 1 1.06-1.06l5.156 5.155a.75.75 0 1 1-1.06 1.06l-5.156-5.155ZM6.46 13.884a5.25 5.25 0 1 1 7.43-.005l-.005.005l-.005.004a5.25 5.25 0 0 1-7.42-.004Z"
-                            clipRule="evenodd" />
-                    </svg>
-                </button>
+                    className="pl-9 min-w-0 border grow border-green-600 focus:border-green-700 rounded-lg px-3 py-2 transition-all duration-300 bg-white shadow-sm focus:shadow-md"
+                    type="text" placeholder="Search products..." data-name="search" ref={searchBarRef} onInput={handleSearch} onKeyDown={handleSearch}/>
             </div>
 
             <div className="text-white font-semibold flex xs:gap-2">

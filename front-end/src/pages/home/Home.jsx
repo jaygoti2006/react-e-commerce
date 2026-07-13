@@ -2,8 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
 import { useSearchParams } from 'react-router';
 
+const countPerPage=18;
+
 export default function Home() {
     const [products,setProducts]=useState([]);
+    const [page,setPage]=useState(1);
 
     const getProducts = useCallback(async function (search) {
         try {
@@ -27,15 +30,22 @@ export default function Home() {
         getProducts(search);
     },[search,getProducts]);
 
+    function handleLoad(){
+        setPage(page+1);
+    }
+
     return (
         <>
             <title>E Commerce App</title>
             <link rel="icon" href="home-favicon.png"></link>
             <div className="grid grid-cols-2 divide-x-2 divide-y-2 divide-neutral-100 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                {products.map((el) => {
-                    return <ProductCard image={el.image} name={el.name} rating={el.rating} priceCents={el.priceCents} key={el.id} id={el.id}/>
+                {products.slice(0,page*countPerPage).map((product) => {
+                    return <ProductCard product={product} key={product.id}/>
                 })}
             </div>
+            { (products.length>page*countPerPage) ?
+                <button className="block btn-secondary px-4 py-2.5 mx-auto my-6" onClick={handleLoad}>Load More</button> : ""
+            }
         </>
     );
 }
