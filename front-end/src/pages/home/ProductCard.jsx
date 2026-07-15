@@ -1,35 +1,55 @@
 import convertMoney from '../../utils/money';
 import { useContext, useEffect, useState } from 'react';
 import CartContext from '../../contexts/CartContext';
+import ToastContext from '../../contexts/ToastContext';
 
 const limit = 10;
 
 export default function ProductCard({ product: { image, name, rating, priceCents, id }, product }) {
     const { cart, updateCartItem, deleteCartItem, addCartItem } = useContext(CartContext);
-    const [currQuantity, setCurrQuantity] = useState(()=>{
+    const { showToast } = useContext(ToastContext);
+    const [currQuantity, setCurrQuantity] = useState(() => {
         const t = cart.items.find((el) => el.productId === id);
-        if(t) return t.quantity;
+        if (t) return t.quantity;
         return 0;
     });
 
     useEffect(() => {
         const t = cart.items.find((el) => el.productId === id);
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        if(t) setCurrQuantity(t.quantity);
-    },[cart,id]);
+        if (t) setCurrQuantity(t.quantity);
+    }, [cart, id]);
 
     function handleAdd() {
         if (currQuantity < limit) {
-            setCurrQuantity(currQuantity + 1);
-            if(currQuantity!==0) updateCartItem(product, {quantity: currQuantity + 1});
-            else addCartItem(product,1);
+            if (currQuantity !== 0) updateCartItem(product, { quantity: currQuantity + 1 }).then(() => {
+                setCurrQuantity(currQuantity + 1)
+            }).catch(() => showToast({
+                message: "Failed adding to cart!",
+                type: "error"
+            }));
+            else addCartItem(product, 1).then(() => {
+                setCurrQuantity(currQuantity + 1)
+            }).catch(() => showToast({
+                message: "Failed adding to cart!",
+                type: "error"
+            }));
         }
     }
 
     function handleRemove() {
-        setCurrQuantity(currQuantity - 1);
-        if(currQuantity>1) updateCartItem(product, {quantity: currQuantity - 1});
-        else deleteCartItem(product.id,1);
+        if (currQuantity > 1) updateCartItem(product, { quantity: currQuantity - 1 }).then(() => {
+            setCurrQuantity(currQuantity - 1)
+        }).catch(() => showToast({
+            message: "Failed removing from cart!",
+            type: "error"
+        }));
+        else deleteCartItem(product.id, 1).then(() => {
+            setCurrQuantity(currQuantity - 1)
+        }).catch(() => showToast({
+            message: "Failed removing from cart!",
+            type: "error"
+        }));
     }
 
     return (
@@ -45,19 +65,19 @@ export default function ProductCard({ product: { image, name, rating, priceCents
                 </div>
                 <span className="font-bold text-black">${convertMoney(priceCents)}</span>
                 <div className="flex flex-col mt-2 gap-2">
-                    { (currQuantity!==0) ?
-                    <div className="flex items-center bg-[#198754] rounded-md text-white self-start h-7.5">
-                        <button className="cursor-pointer pl-1" onClick={handleRemove}>
-                            <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 36 36"><path d="M26 17H10a1 1 0 0 0 0 2h16a1 1 0 0 0 0-2Z" className="clr-i-outline clr-i-outline-path-1" /><path fill="none" d="M0 0h36v36H0z" /></svg>
-                        </button>
-                        <span className="min-w-5 text-center">
-                            {currQuantity}
-                        </span>
-                        <button className="cursor-pointer pr-1 disabled:text-white/70" onClick={handleAdd} disabled={currQuantity===limit}>
-                            <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" /></svg>
-                        </button>
-                    </div> :
-                    <button className="h-7.5 btn-tertiary self-start px-4 text-[16px]" onClick={handleAdd}>Add</button>
+                    {(currQuantity !== 0) ?
+                        <div className="flex items-center bg-[#198754] rounded-md text-white self-start h-7.5">
+                            <button className="cursor-pointer pl-1" onClick={handleRemove}>
+                                <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 36 36"><path d="M26 17H10a1 1 0 0 0 0 2h16a1 1 0 0 0 0-2Z" className="clr-i-outline clr-i-outline-path-1" /><path fill="none" d="M0 0h36v36H0z" /></svg>
+                            </button>
+                            <span className="min-w-5 text-center">
+                                {currQuantity}
+                            </span>
+                            <button className="cursor-pointer pr-1 disabled:text-white/70" onClick={handleAdd} disabled={currQuantity === limit}>
+                                <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" /></svg>
+                            </button>
+                        </div> :
+                        <button className="h-7.5 btn-tertiary self-start px-4 text-[16px]" onClick={handleAdd}>Add</button>
                     }
                 </div>
             </div>

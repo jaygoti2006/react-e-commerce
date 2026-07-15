@@ -1,4 +1,4 @@
-import Header from "../components/Header"
+import Header from "../../components/Header"
 import {Link} from 'react-router'
 
 export default function ErrorNotFound(){

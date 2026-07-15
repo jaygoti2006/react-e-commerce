@@ -1,41 +1,25 @@
 import { useContext, useRef } from 'react';
 import { Link } from 'react-router';
 import CartContext from '../../contexts/CartContext';
+import ToastContext from '../../contexts/ToastContext';
 
 export default function OrderItem({ id, product : {product, quantity, estimatedDeliveryTimeMs} }) {
-    const { getCartItems } = useContext(CartContext);
+    const { addCartItem } = useContext(CartContext);
+    const { showToast } = useContext(ToastContext);
     const addBtnRef = useRef(null);
-    async function addToCart() {
-        try {
-            const res = await fetch("/api/cart-items", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    "productId": product.id,
-                    "quantity": 1
-                })
-            });
-            if (!res.ok) {
-                console.error(res.status);
-                return Promise.reject(res.status);
-            } getCartItems();
-        } catch (e) {
-            console.error(e);
-            return Promise.reject(e);
-        }
-    }
 
     function handleAdd() {
-        addToCart().then(() => {
+        addCartItem(product,1).then(() => {
             addBtnRef.current.children[1].classList.add("hidden");
             addBtnRef.current.children[0].classList.remove("hidden");
             setTimeout(() => {
                 addBtnRef.current.children[0].classList.add("hidden");
                 addBtnRef.current.children[1].classList.remove("hidden");
             }, 2000);
-        });
+        }).catch(()=>showToast({
+            message: "Failed to add to cart!",
+            type: "error"
+        }));
     }
 
     return (

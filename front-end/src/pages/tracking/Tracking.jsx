@@ -7,7 +7,7 @@ export default function Tracking() {
     const { orders } = useContext(OrdersContext);
     const progressRef = useRef(null);
 
-    const product = orders.find(order => order.id === searchParams.get("orderId"))?.products.find(
+    const product = orders.data.find(order => order.id === searchParams.get("orderId"))?.products.find(
         product => product.productId === searchParams.get("productId")
     );
 

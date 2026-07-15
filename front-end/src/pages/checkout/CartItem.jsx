@@ -3,9 +3,11 @@ import convertMoney from '../../utils/money';
 import DeliveryOption from './DeliveryOption';
 import getDate from '../../utils/getDate';
 import CartContext from '../../contexts/CartContext';
+import ToastContext from '../../contexts/ToastContext';
 
 export default function CartItem({ cartItem: {product, quantity, deliveryOptionId}, deliveryOptions }) {
     const { updateCartItem, deleteCartItem } = useContext(CartContext);
+    const { showToast } = useContext(ToastContext);
     const [updateEnable, setUpdateEnable] = useState(false);
     const updateInputRef = useRef(null);
     const currDeliveryOption = useMemo(()=>{
@@ -16,11 +18,23 @@ export default function CartItem({ cartItem: {product, quantity, deliveryOptionI
 
     function handleUpdate() {
         setUpdateEnable(!updateEnable);
-        if (updateEnable) updateCartItem(product,updateInputRef.current.value);
+        if (updateEnable) updateCartItem(product,{quantity: Number(updateInputRef.current.value)}).then(()=>showToast({
+            type: "success",
+            message: "Updated quantity of item!"
+        })).catch(()=>showToast({
+            type: "error",
+            message: "Updating quantity failed!"
+        }));
     }
 
     function handleDelete() {
-        deleteCartItem(product.id,quantity);
+        deleteCartItem(product.id,quantity).then(()=>showToast({
+            type: "success",
+            message: "Removed item from cart!"
+        })).catch(()=>showToast({
+            type: "error",
+            message: "Removing item failed!"
+        }));
     }
 
     return (
@@ -44,7 +58,7 @@ export default function CartItem({ cartItem: {product, quantity, deliveryOptionI
                     <legend className="font-bold">Choose a delivery option:</legend>
                     <div className="flex flex-col gap-3">
                         {deliveryOptions.map((el) => {
-                            return <DeliveryOption deliveryOption={el} product={product} key={el.id} currDeliveryOption={currDeliveryOption} />;
+                            return <DeliveryOption deliveryOptions={deliveryOptions} deliveryOption={el} product={product} key={el.id} currDeliveryOption={currDeliveryOption} />;
                         })}
                     </div>
                 </fieldset>

@@ -1,4 +1,5 @@
-import { createContext, useEffect, useState, useCallback } from "react";
+import { createContext, useEffect, useState } from "react";
+import { getCartItemsApi, updateCartItemApi, addCartItemApi, deleteCartItemApi } from "../api/cart";
 
 const CartContext = createContext();
 
@@ -7,114 +8,109 @@ export default CartContext;
 export function CartContextProvider({ children }) {
     const [cart, setCart] = useState({
         items: [],
-        count: 0
+        count: 0,
+        loaded: true
     });
 
-    const getCartItems = useCallback(async function () {
-        try {
-            const res = await fetch("/api/cart-items?" + new URLSearchParams({
-                "expand": "product"
-            }).toString());
-            if (res.ok) {
-                const data = await res.json();
-                let c = 0;
-                for (let el of data) c += el.quantity;
-                setCart({ items: data, count: c });
-            } else console.error(res.status);
-        } catch (e) {
-            console.error(e);
-        }
-    }, []);
-
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        getCartItems();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        getCartItemsApi().then(data => {
+            let c = 0;
+            for (let el of data) c += el.quantity;
+            setCart({ 
+                items: data, 
+                count: c, 
+                loaded: true
+            });
+        }).catch(() => {
+            setCart({
+                items: [],
+                count: 0,
+                loaded: false
+            })
+        });
     }, []);
 
     async function updateCartItem(product, options) {
         try {
-            const obj={};
-            if(options.quantity) obj.quantity=options.quantity;
-            if(options.dId) obj.deliveryOptionId=options.dId;
-
-            const res = await fetch(`/api/cart-items/${product.id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(obj)
+            const data = await updateCartItemApi(product.id, options);
+            let c = 0;
+            const t = cart.items.map((el) => {
+                if (el.productId !== product.id) {
+                    c += el.quantity;
+                    return el;
+                }
+                c += data.quantity;
+                return { ...data, product };
             });
-            if (res.ok) {
-                const data = await res.json();
-                let c = 0;
-                const t = cart.items.map((el) => {
-                    if (el.productId !== product.id) {
-                        c += el.quantity;
-                        return el;
-                    }
-                    c += data.quantity;
-                    return { ...data, product };
-                });
-                setCart({
-                    items: t,
-                    count: c
-                });
-            } else console.error(res.status);
+            setCart({
+                items: t,
+                loaded: true,
+                count: c
+            });
         } catch (e) {
             console.error(e);
+            return Promise.reject(e);
         }
     };
 
     async function addCartItem(product, quantity) {
         try {
-            const res = await fetch("/api/cart-items", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    "productId": product.id,
-                    "quantity": Number(quantity)
-                })
+            const data = await addCartItemApi(product.id, quantity);
+            setCart({
+                items: [{ product, ...data }, ...cart.items],
+                loaded: true,
+                count: cart.count + quantity
             });
-            if (!res.ok) {
-                console.error(res.status);
-            } else {
-                const data = await res.json();
-                setCart({
-                    items: [{product,...data},...cart.items],
-                    count: cart.count+quantity
-                });
-            }
         } catch (e) {
             console.error(e);
+            return Promise.reject(e);
         }
     }
 
-    async function deleteCartItem(id, quantity) {
+    async function deleteCartItem(productId, quantity) {
         try {
-            const res = await fetch(`/api/cart-items/${id}`, {
-                method: "DELETE"
+            await deleteCartItemApi(productId);
+            setCart({
+                items: cart.items.filter((el) => { return el.productId !== productId; }),
+                loaded: true,
+                count: cart.count - quantity
             });
-            if (res.ok) {
-                setCart({
-                    items: cart.items.filter((el) => { return el.productId !== id; }),
-                    count: cart.count - quantity
-                });
-            } else console.error(res.status);
         } catch (e) {
             console.error(e);
+            return Promise.reject(e);
         }
+    }
+
+    async function deleteAll() {
+        try {
+            for (const el of cart.items) await deleteCartItemApi(el.productId);
+            setCart({ 
+                items: [], 
+                count: 0,
+                loaded: true 
+            });
+        } catch (e) {
+            console.error(e);
+            return Promise.reject(e);
+        }
+    }
+
+    function clearCart() {
+        setCart({
+            items: [],
+            loaded: true,
+            count: 0
+        })
     }
 
     return (
         <CartContext value={{
             cart,
-            setCart,
             updateCartItem,
             deleteCartItem,
-            addCartItem
+            addCartItem,
+            deleteAll,
+            clearCart
         }}>
             {children}
         </CartContext>

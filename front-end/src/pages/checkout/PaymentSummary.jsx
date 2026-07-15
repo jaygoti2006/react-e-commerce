@@ -3,50 +3,29 @@ import convertMoney from '../../utils/money';
 import CartContext from '../../contexts/CartContext';
 import OrdersContext from '../../contexts/OrdersContext';
 import { useNavigate } from 'react-router';
+import ToastContext from '../../contexts/ToastContext';
 
 export default function PaymentSummary({ payment }) {
-    const { cart, setCart } = useContext(CartContext);
-    const { orders, setOrders } = useContext(OrdersContext);
+    const { cart } = useContext(CartContext);
+    const { placeOrder } = useContext(OrdersContext);
+    const { showToast } = useContext(ToastContext);
     const navigate = useNavigate();
-
-    async function placeOrder() {
-        try {
-            const res = await fetch("/api/orders", {
-                method: "POST"
-            });
-            if (res.ok) {
-                const data = await res.json();
-                try {
-                    const res1 = await fetch(`/api/orders/${data.id}?expand=products`);
-                    if(res1.ok){
-                        const data1 = await res1.json();
-                        setOrders([ data1, ...orders]);
-                    } console.log(res.status);
-                } catch (e) {
-                    console.error(e);
-                }
-
-                setCart({
-                    items: [],
-                    count: 0
-                });
-            } else {
-                console.error(res.status);
-                return Promise.reject(res.status);
-            }
-        } catch (e) {
-            console.error(e);
-            return Promise.reject(e);
-        }
-    }
 
     function handlePlaceOrder() {
         placeOrder().then(() => {
+            showToast({
+                message: "Placed order successfully!",
+                type: "success"
+            });
             navigate({
                 pathname: '/orders'
             });
-        });
+        }).catch(()=> showToast({
+            message: "Failed to place order!",
+            type: "error"
+        }));
     }
+
     return (
         <div className="w-87.5 shrink-0 p-4 flex flex-col gap-2 border border-neutral-300 rounded-md">
             <h4 className="text-[19px] font-bold">Payment Summary</h4>
