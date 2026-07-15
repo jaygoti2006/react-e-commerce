@@ -56,8 +56,17 @@ export function CartContextProvider({ children }) {
     async function addCartItem(product, quantity) {
         try {
             const data = await addCartItemApi(product.id, quantity);
+            let ok=0;
+            let t = cart.items.map((el) => {
+                if (el.productId !== product.id) {
+                    return el;
+                }
+                ok=1;
+                return { ...data, product };
+            });
+            if(!ok) t=[{ ...data, product },...t];
             setCart({
-                items: [{ product, ...data }, ...cart.items],
+                items: t,
                 loaded: true,
                 count: cart.count + quantity
             });
