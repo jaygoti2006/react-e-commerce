@@ -13,7 +13,7 @@ export function CartContextProvider({ children }) {
 
     useEffect(() => {
         getCartItemsApi().then(data => {
-            setCart({ 
+            setCart({
                 items: data,
                 loaded: true
             });
@@ -25,24 +25,26 @@ export function CartContextProvider({ children }) {
         });
     }, []);
 
-    const count=useMemo(()=>{
+    const count = useMemo(() => {
         let c = 0;
         for (let el of cart.items) c += el.quantity;
         return c;
-    },[cart.items]);
+    }, [cart.items]);
 
     async function updateCartItem(product, options) {
         try {
             const data = await updateCartItemApi(product.id, options);
-            const t = cart.items.map((el) => {
-                if (el.productId !== product.id) {
-                    return el;
+            setCart(cart => {
+                const newItems = cart.items.map((el) => {
+                    if (el.productId !== product.id) {
+                        return el;
+                    }
+                    return { ...data, product };
+                });
+                return {
+                    items: newItems,
+                    loaded: true
                 }
-                return { ...data, product };
-            });
-            setCart({
-                items: t,
-                loaded: true
             });
         } catch (e) {
             console.error(e);
@@ -53,18 +55,20 @@ export function CartContextProvider({ children }) {
     async function addCartItem(product, quantity) {
         try {
             const data = await addCartItemApi(product.id, quantity);
-            let ok=0;
-            let t = cart.items.map((el) => {
-                if (el.productId !== product.id) {
-                    return el;
+            setCart(cart => {
+                let ok = 0;
+                let newItems = cart.items.map((el) => {
+                    if (el.productId !== product.id) {
+                        return el;
+                    }
+                    ok = 1;
+                    return { ...data, product };
+                });
+                if (!ok) newItems = [{ ...data, product }, ...newItems];
+                return {
+                    items: newItems,
+                    loaded: true
                 }
-                ok=1;
-                return { ...data, product };
-            });
-            if(!ok) t=[{ ...data, product },...t];
-            setCart({
-                items: t,
-                loaded: true
             });
         } catch (e) {
             console.error(e);
@@ -75,9 +79,11 @@ export function CartContextProvider({ children }) {
     async function deleteCartItem(productId) {
         try {
             await deleteCartItemApi(productId);
-            setCart({
-                items: cart.items.filter((el) => { return el.productId !== productId; }),
-                loaded: true
+            setCart(cart => {
+                return {
+                    items: cart.items.filter((el) => { return el.productId !== productId; }),
+                    loaded: true
+                }
             });
         } catch (e) {
             console.error(e);
@@ -90,7 +96,7 @@ export function CartContextProvider({ children }) {
             await Promise.all(cart.items.map((el) => deleteCartItemApi(el.productId)));
             setCart({
                 items: [],
-                loaded: true 
+                loaded: true
             });
         } catch (e) {
             console.error(e);

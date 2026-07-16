@@ -1,5 +1,5 @@
 import convertMoney from '../../utils/money';
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import CartContext from '../../contexts/CartContext';
 import ToastContext from '../../contexts/ToastContext';
 
@@ -8,29 +8,19 @@ const limit = 10;
 export default function ProductCard({ product: { image, name, rating, priceCents, id }, product }) {
     const { cart, updateCartItem, deleteCartItem, addCartItem } = useContext(CartContext);
     const { showToast } = useContext(ToastContext);
-    const [currQuantity, setCurrQuantity] = useState(() => {
+    const currQuantity = function(){
         const t = cart.items.find((el) => el.productId === id);
         if (t) return t.quantity;
         return 0;
-    });
-
-    useEffect(() => {
-        const t = cart.items.find((el) => el.productId === id);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (t) setCurrQuantity(t.quantity);
-    }, [cart, id]);
+    }();
 
     function handleAdd() {
         if (currQuantity < limit) {
-            if (currQuantity !== 0) updateCartItem(product, { quantity: currQuantity + 1 }).then(() => {
-                setCurrQuantity(currQuantity + 1)
-            }).catch(() => showToast({
+            if (currQuantity !== 0) updateCartItem(product, { quantity: currQuantity + 1 }).catch(() => showToast({
                 message: "Failed adding to cart!",
                 type: "error"
             }));
-            else addCartItem(product, 1).then(() => {
-                setCurrQuantity(currQuantity + 1)
-            }).catch(() => showToast({
+            else addCartItem(product, 1).catch(() => showToast({
                 message: "Failed adding to cart!",
                 type: "error"
             }));
@@ -38,15 +28,11 @@ export default function ProductCard({ product: { image, name, rating, priceCents
     }
 
     function handleRemove() {
-        if (currQuantity > 1) updateCartItem(product, { quantity: currQuantity - 1 }).then(() => {
-            setCurrQuantity(currQuantity - 1)
-        }).catch(() => showToast({
+        if (currQuantity > 1) updateCartItem(product, { quantity: currQuantity - 1 }).catch(() => showToast({
             message: "Failed removing from cart!",
             type: "error"
         }));
-        else deleteCartItem(product.id).then(() => {
-            setCurrQuantity(currQuantity - 1)
-        }).catch(() => showToast({
+        else deleteCartItem(product.id).catch(() => showToast({
             message: "Failed removing from cart!",
             type: "error"
         }));
