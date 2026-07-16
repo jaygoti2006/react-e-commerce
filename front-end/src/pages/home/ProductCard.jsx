@@ -44,7 +44,7 @@ export default function ProductCard({ product: { image, name, rating, priceCents
             message: "Failed removing from cart!",
             type: "error"
         }));
-        else deleteCartItem(product.id, 1).then(() => {
+        else deleteCartItem(product.id).then(() => {
             setCurrQuantity(currQuantity - 1)
         }).catch(() => showToast({
             message: "Failed removing from cart!",

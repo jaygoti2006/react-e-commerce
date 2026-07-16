@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import ToastContext from '../../contexts/ToastContext';
 
 export default function PaymentSummary({ payment }) {
-    const { cart } = useContext(CartContext);
+    const { count } = useContext(CartContext);
     const { placeOrder } = useContext(OrdersContext);
     const { showToast } = useContext(ToastContext);
     const navigate = useNavigate();
@@ -32,7 +32,7 @@ export default function PaymentSummary({ payment }) {
             <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between">
-                        <span>Items ({cart.count}):</span>
+                        <span>Items ({count}):</span>
                         <span>${convertMoney(payment.base)}</span>
                     </div>
                     <div className="flex justify-between">

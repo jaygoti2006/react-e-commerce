@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import { getCartItemsApi, updateCartItemApi, addCartItemApi, deleteCartItemApi } from "../api/cart";
 
 const CartContext = createContext();
@@ -8,44 +8,41 @@ export default CartContext;
 export function CartContextProvider({ children }) {
     const [cart, setCart] = useState({
         items: [],
-        count: 0,
         loaded: true
     });
 
     useEffect(() => {
         getCartItemsApi().then(data => {
-            let c = 0;
-            for (let el of data) c += el.quantity;
             setCart({ 
-                items: data, 
-                count: c, 
+                items: data,
                 loaded: true
             });
         }).catch(() => {
             setCart({
                 items: [],
-                count: 0,
                 loaded: false
             })
         });
     }, []);
 
+    const count=useMemo(()=>{
+        let c = 0;
+        for (let el of cart.items) c += el.quantity;
+        return c;
+    },[cart.items]);
+
     async function updateCartItem(product, options) {
         try {
             const data = await updateCartItemApi(product.id, options);
-            let c = 0;
             const t = cart.items.map((el) => {
                 if (el.productId !== product.id) {
-                    c += el.quantity;
                     return el;
                 }
-                c += data.quantity;
                 return { ...data, product };
             });
             setCart({
                 items: t,
-                loaded: true,
-                count: c
+                loaded: true
             });
         } catch (e) {
             console.error(e);
@@ -67,8 +64,7 @@ export function CartContextProvider({ children }) {
             if(!ok) t=[{ ...data, product },...t];
             setCart({
                 items: t,
-                loaded: true,
-                count: cart.count + quantity
+                loaded: true
             });
         } catch (e) {
             console.error(e);
@@ -76,13 +72,12 @@ export function CartContextProvider({ children }) {
         }
     }
 
-    async function deleteCartItem(productId, quantity) {
+    async function deleteCartItem(productId) {
         try {
             await deleteCartItemApi(productId);
             setCart({
                 items: cart.items.filter((el) => { return el.productId !== productId; }),
-                loaded: true,
-                count: cart.count - quantity
+                loaded: true
             });
         } catch (e) {
             console.error(e);
@@ -92,10 +87,9 @@ export function CartContextProvider({ children }) {
 
     async function deleteAll() {
         try {
-            for (const el of cart.items) await deleteCartItemApi(el.productId);
-            setCart({ 
-                items: [], 
-                count: 0,
+            await Promise.all(cart.items.map((el) => deleteCartItemApi(el.productId)));
+            setCart({
+                items: [],
                 loaded: true 
             });
         } catch (e) {
@@ -107,14 +101,14 @@ export function CartContextProvider({ children }) {
     function clearCart() {
         setCart({
             items: [],
-            loaded: true,
-            count: 0
+            loaded: true
         })
     }
 
     return (
         <CartContext value={{
             cart,
+            count,
             updateCartItem,
             deleteCartItem,
             addCartItem,

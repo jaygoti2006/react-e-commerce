@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import cartContext from '../../contexts/CartContext';
 
 export default function CheckoutHeader() {
-    const {cart}=useContext(cartContext);
+    const { count }=useContext(cartContext);
     return (
         <div className="fixed z-10 top-0 left-0 right-0 bg-white">
             <div className="max-w-6xl mx-auto py-2.5 px-2 flex xs:gap-5 md:gap-20 lg:gap-40 items-center justify-between">
@@ -16,7 +16,7 @@ export default function CheckoutHeader() {
                     </Link>
                 </div>
 
-                <h1 className="font-medium text-2xl leading-none">Checkout (<span className="text-green-700">{cart.count} items</span>)</h1>
+                <h1 className="font-medium text-2xl leading-none">Checkout (<span className="text-green-700">{count} items</span>)</h1>
 
                 <div className="grow shrink max-w-50 flex justify-end">
                     <img className="w-9" src="https://supersimple.dev/projects/ecommerce/images/icons/font-awesome-money-check.svg" alt="" />
