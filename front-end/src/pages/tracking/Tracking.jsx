@@ -1,19 +1,21 @@
 import { useContext, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router";
 import OrdersContext from "../../contexts/OrdersContext";
+import ErrorFetchFailed from "../error/ErrorFetchFailed";
 
 export default function Tracking() {
     const [searchParams] = useSearchParams();
     const { orders } = useContext(OrdersContext);
     const progressRef = useRef(null);
 
-    const product = orders.data.find(order => order.id === searchParams.get("orderId"))?.products.find(
+    const order=orders.data.find(order => order.id === searchParams.get("orderId"));
+
+    const product = order?.products.find(
         product => product.productId === searchParams.get("productId")
     );
 
-    let orderTimeMs = orders.data.find(order => order.id === searchParams.get("orderId"))?.orderTimeMs;
     // eslint-disable-next-line react-hooks/purity
-    const completionPr=(Number(Date.now()) - Number(orderTimeMs)) / (Number(product.estimatedDeliveryTimeMs) - Number(orderTimeMs)) * 100;
+    const completionPr=(Number(Date.now()) - Number(order?.orderTimeMs)) / (Number(product?.estimatedDeliveryTimeMs) - Number(order?.orderTimeMs)) * 100;
 
     useEffect(() => {
         if (product) {
@@ -23,7 +25,7 @@ export default function Tracking() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [product]);
 
-    if (!searchParams.has("orderId") || !searchParams.has("productId") || !product) return <></>;
+    if (!searchParams.has("orderId") || !searchParams.has("productId") || !product) return <ErrorFetchFailed />;
 
     return (
         <>
