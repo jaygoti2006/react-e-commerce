@@ -3,9 +3,20 @@ import convertMoney from '../../utils/money';
 import DeliveryOption from './DeliveryOption';
 import getDate from '../../utils/getDate';
 import CartContext from '../../contexts/CartContext';
+import ToastContext from '../../contexts/ToastContext';
+
+function validate(val){
+    if(val.trim()==="") return false;
+    if(!Number(val.trim())) return false;
+    if(Number(val.trim())<=0) return false;
+    if(!Number.isInteger(Number(val.trim()))) return false;
+
+    return true;
+}
 
 export default function CartItem({ cartItem: { product, quantity, deliveryOptionId }, deliveryOptions }) {
     const { cart, requestDebounceAction } = useContext(CartContext);
+    const { showToast } = useContext(ToastContext);
     const [updateEnable, setUpdateEnable] = useState(false);
     const updateInputRef = useRef(null);
     const currDeliveryOption = useMemo(() => {
@@ -22,17 +33,24 @@ export default function CartItem({ cartItem: { product, quantity, deliveryOption
     }, [updateEnable, quantity]);
 
     function handleUpdate() {
-        setUpdateEnable(!updateEnable);
-        if (updateEnable) {
-            const currCartItem = cart.items.find(el => el.productId === product.id);
-            const newCartItem = {
-                product,
-                productId: product.id,
-                quantity: Number(updateInputRef.current.value),
-                deliveryOptionId: currCartItem.deliveryOptionId
-            };
+        if (validate(updateInputRef.current.value)) {
+            setUpdateEnable(!updateEnable);
+            if (updateEnable) {
+                const currCartItem = cart.items.find(el => el.productId === product.id);
+                const newCartItem = {
+                    product,
+                    productId: product.id,
+                    quantity: Number(updateInputRef.current.value),
+                    deliveryOptionId: currCartItem.deliveryOptionId
+                };
 
-            requestDebounceAction(product.id, newCartItem);
+                requestDebounceAction(product.id, newCartItem);
+            }
+        }else{
+            showToast({
+                type: "error",
+                message: "Please enter valid number"
+            });
         }
     }
 

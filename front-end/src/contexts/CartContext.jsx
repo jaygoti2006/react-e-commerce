@@ -39,7 +39,7 @@ export function CartContextProvider({ children }) {
 
     async function updateCartItem(product, options) {
         try {
-            if(version.current[product.id]===undefined) version.current[product.id]=0;
+            if (version.current[product.id] === undefined) version.current[product.id] = 0;
             const reqversion = version.current[product.id];
             const data = await updateCartItemApi(product.id, options);
             if (reqversion === version.current[product.id]) {
@@ -60,11 +60,14 @@ export function CartContextProvider({ children }) {
             }
         } catch (e) {
             console.error(e);
-            const items = [];
-            for (const value of Object.values(serverCart.current)) if (value) items.push(value);
-            setCart({
-                items: items,
-                loaded: true
+            setCart(cart => {
+                return {
+                    items: cart.items.map(el=>{
+                        if(el.productId!==product.id) return el;
+                        if(serverCart.current[product.id]) return serverCart.current[product.id];
+                    }).filter(el=>el),
+                    loaded: true
+                }
             });
             return Promise.reject(e);
         }
@@ -72,7 +75,7 @@ export function CartContextProvider({ children }) {
 
     async function addCartItem(product, quantity) {
         try {
-            if(version.current[product.id]===undefined) version.current[product.id]=0;
+            if (version.current[product.id] === undefined) version.current[product.id] = 0;
             const reqversion = version.current[product.id];
             const data = await addCartItemApi(product.id, quantity);
             if (reqversion === version.current[product.id]) {
@@ -96,11 +99,14 @@ export function CartContextProvider({ children }) {
             }
         } catch (e) {
             console.error(e);
-            const items = [];
-            for (const value of Object.values(serverCart.current)) if (value) items.push(value);
-            setCart({
-                items: items,
-                loaded: true
+            setCart(cart => {
+                return {
+                    items: cart.items.map(el=>{
+                        if(el.productId!==product.id) return el;
+                        if(serverCart.current[product.id]) return serverCart.current[product.id];
+                    }).filter(el=>el),
+                    loaded: true
+                }
             });
             return Promise.reject(e);
         }
@@ -108,7 +114,7 @@ export function CartContextProvider({ children }) {
 
     async function deleteCartItem(productId) {
         try {
-            if(version.current[productId]===undefined) version.current[productId]=0;
+            if (version.current[productId] === undefined) version.current[productId] = 0;
             const reqversion = version.current[productId];
             await deleteCartItemApi(productId);
             if (reqversion === version.current[productId]) {
@@ -123,11 +129,14 @@ export function CartContextProvider({ children }) {
             }
         } catch (e) {
             console.error(e);
-            const items = [];
-            for (const value of Object.values(serverCart.current)) if (value) items.push(value);
-            setCart({
-                items: items,
-                loaded: true
+            setCart(cart => {
+                return {
+                    items: cart.items.map(el=>{
+                        if(el.productId!==productId) return el;
+                        if(serverCart.current[productId]) return serverCart.current[productId];
+                    }).filter(el=>el),
+                    loaded: true
+                }
             });
             return Promise.reject(e);
         }
@@ -139,13 +148,16 @@ export function CartContextProvider({ children }) {
             debounceActionTimers.current[id] = undefined;
         }
         try {
-            await Promise.all(cart.items.map((el) => deleteCartItemApi(el.productId)));
+            await Promise.all(cart.items.map((el) => {
+                return deleteCartItemApi(el.productId).then(() => {
+                    version.current[el.productId]++;
+                });
+            }));
             setCart({
                 items: [],
                 loaded: true
             });
             serverCart.current = {};
-            for (let id of Object.keys(version.current)) version.current[id]++;
         } catch (e) {
             console.error(e);
             setTimeout(() => location.reload(), 500)
@@ -163,17 +175,19 @@ export function CartContextProvider({ children }) {
 
     const debounceActionTimers = useRef({});
     function requestDebounceAction(id, newCartItem, delay = 300) {
-        let ok = 0;
-        let newCartItems = [...cart.items.map(el => {
-            if (el.productId !== id) return el;
-            ok = 1;
-            if (newCartItem) return newCartItem;
-        }).filter(el => el)];
-        if (!ok && newCartItem) newCartItems = [newCartItem, ...newCartItems];
-        setCart({
-            items: newCartItems,
-            loaded: true
-        })
+        setCart(cart => {
+            let ok = 0;
+            let newCartItems = [...cart.items.map(el => {
+                if (el.productId !== id) return el;
+                ok = 1;
+                if (newCartItem) return newCartItem;
+            }).filter(el => el)];
+            if (!ok && newCartItem) newCartItems = [newCartItem, ...newCartItems];
+            return {
+                items: newCartItems,
+                loaded: true
+            }
+        });
 
         clearTimeout(debounceActionTimers.current[id]);
         debounceActionTimers.current[id] = setTimeout(() => {

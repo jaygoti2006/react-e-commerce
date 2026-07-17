@@ -1,25 +1,19 @@
-import { useContext, useRef } from 'react';
+import { useContext } from 'react';
 import { Link } from 'react-router';
 import CartContext from '../../contexts/CartContext';
-import ToastContext from '../../contexts/ToastContext';
 
-export default function OrderItem({ id, product : {product, quantity, estimatedDeliveryTimeMs} }) {
-    const { addCartItem } = useContext(CartContext);
-    const { showToast } = useContext(ToastContext);
-    const addBtnRef = useRef(null);
+export default function OrderItem({ id, product: { product, quantity, estimatedDeliveryTimeMs } }) {
+    const { cart, requestDebounceAction } = useContext(CartContext);
 
     function handleAdd() {
-        addCartItem(product,1).then(() => {
-            addBtnRef.current.children[1].classList.add("hidden");
-            addBtnRef.current.children[0].classList.remove("hidden");
-            setTimeout(() => {
-                addBtnRef.current.children[0].classList.add("hidden");
-                addBtnRef.current.children[1].classList.remove("hidden");
-            }, 2000);
-        }).catch(()=>showToast({
-            message: "Failed to add to cart!",
-            type: "error"
-        }));
+        const currCartItem = cart.items.find(el => el.productId === product.id);
+        const newCartItem = {
+            product,
+            productId: product.id,
+            quantity: (currCartItem) ? currCartItem.quantity+1 : 1,
+            deliveryOptionId: (currCartItem) ? currCartItem.deliveryOptionId : "1"
+        };
+        requestDebounceAction(product.id,newCartItem);
     }
 
     return (
@@ -38,14 +32,7 @@ export default function OrderItem({ id, product : {product, quantity, estimatedD
                     </span>
                 </div>
                 <div className="flex flex-col gap-2">
-                    <button className="max-w-35 w-35 text-white shadow-md bg-[#198754] hover:bg-[#198754]/80 active:bg-[#198754] px-4 py-1 text-[14px] cursor-pointer rounded-md leading-none" onClick={handleAdd} ref={addBtnRef}>
-                        <div className="flex justify-center items-center gap-2 hidden">
-                            <span>
-                                <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><g id="evaCheckmarkFill0"><g id="evaCheckmarkFill1"><path id="evaCheckmarkFill2" d="M9.86 18a1 1 0 0 1-.73-.32l-4.86-5.17a1 1 0 1 1 1.46-1.37l4.12 4.39l8.41-9.2a1 1 0 1 1 1.48 1.34l-9.14 10a1 1 0 0 1-.73.33Z" /></g></g></svg>
-                            </span>
-                            <span>Added</span>
-                        </div>
-
+                    <button className="max-w-35 w-35 text-white shadow-md bg-[#198754] hover:bg-[#198754]/80 active:bg-[#198754] px-4 py-1 text-[14px] cursor-pointer rounded-md leading-none" onClick={handleAdd}>
                         <div className="flex justify-center items-center gap-2">
                             <span>
                                 <svg className="block fill-current" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path fillRule="evenodd" d="M9.5 19.5a1 1 0 1 0 0-2a1 1 0 0 0 0 2m0 1a2 2 0 1 0 0-4a2 2 0 0 0 0 4m7-1a1 1 0 1 0 0-2a1 1 0 0 0 0 2m0 1a2 2 0 1 0 0-4a2 2 0 0 0 0 4M3 4a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .476.348L9.37 14.5H17a.5.5 0 0 1 0 1H9.004a.5.5 0 0 1-.476-.348L5.135 4.5H3.5A.5.5 0 0 1 3 4" clipRule="evenodd"></path><path d="M8.5 13L6 6h13.337a.5.5 0 0 1 .48.637l-1.713 6a.5.5 0 0 1-.481.363z"></path></svg>
@@ -56,7 +43,7 @@ export default function OrderItem({ id, product : {product, quantity, estimatedD
                     <Link to="/tracking" className="md:hidden text-center border border-neutral-300 shadow-sm rounded-md py-2.5 leading-none text-[14px] hover:bg-neutral-50 active:bg-white">Track Package</Link>
                 </div>
             </div>
-            <Link to={`/tracking?${new URLSearchParams({orderId: id, productId: product.id}).toString()}`} className="hidden md:block text-center w-55  border border-neutral-300 shadow-sm rounded-md py-2.5 leading-none text-[14px] hover:bg-neutral-50 active:bg-white">Track Package</Link>
+            <Link to={`/tracking?${new URLSearchParams({ orderId: id, productId: product.id }).toString()}`} className="hidden md:block text-center w-55  border border-neutral-300 shadow-sm rounded-md py-2.5 leading-none text-[14px] hover:bg-neutral-50 active:bg-white">Track Package</Link>
         </div>
     );
 }
