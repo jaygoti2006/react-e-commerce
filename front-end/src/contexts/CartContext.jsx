@@ -11,8 +11,10 @@ export function CartContextProvider({ children }) {
         items: [],
         loaded: true
     });
+    
     const { showToast } = useContext(ToastContext);
     const serverCart = useRef([]);
+    const version = useRef(0);
 
     useEffect(() => {
         getCartItemsApi().then(data => {
@@ -37,20 +39,24 @@ export function CartContextProvider({ children }) {
 
     async function updateCartItem(product, options) {
         try {
+            const reqversion=version.current;
             const data = await updateCartItemApi(product.id, options);
-            setCart(cart => {
-                const newItems = cart.items.map((el) => {
-                    if (el.productId !== product.id) {
-                        return el;
+            if (reqversion === version.current) {
+                setCart(cart => {
+                    const newItems = cart.items.map((el) => {
+                        if (el.productId !== product.id) {
+                            return el;
+                        }
+                        return { ...data, product };
+                    });
+                    serverCart.current = newItems;
+                    return {
+                        items: newItems,
+                        loaded: true
                     }
-                    return { ...data, product };
                 });
-                serverCart.current = newItems;
-                return {
-                    items: newItems,
-                    loaded: true
-                }
-            });
+                version.current++;
+            }
         } catch (e) {
             console.error(e);
             setCart({
@@ -63,23 +69,27 @@ export function CartContextProvider({ children }) {
 
     async function addCartItem(product, quantity) {
         try {
+            const reqversion=version.current;
             const data = await addCartItemApi(product.id, quantity);
-            setCart(cart => {
-                let ok = 0;
-                let newItems = cart.items.map((el) => {
-                    if (el.productId !== product.id) {
-                        return el;
+            if (reqversion === version.current) {
+                setCart(cart => {
+                    let ok = 0;
+                    let newItems = cart.items.map((el) => {
+                        if (el.productId !== product.id) {
+                            return el;
+                        }
+                        ok = 1;
+                        return { ...data, product };
+                    });
+                    if (!ok) newItems = [{ ...data, product }, ...newItems];
+                    serverCart.current = newItems;
+                    return {
+                        items: newItems,
+                        loaded: true
                     }
-                    ok = 1;
-                    return { ...data, product };
                 });
-                if (!ok) newItems = [{ ...data, product }, ...newItems];
-                serverCart.current = newItems;
-                return {
-                    items: newItems,
-                    loaded: true
-                }
-            });
+                version.current++;
+            }
         } catch (e) {
             console.error(e);
             setCart({
@@ -92,14 +102,18 @@ export function CartContextProvider({ children }) {
 
     async function deleteCartItem(productId) {
         try {
+            const reqversion=version.current;
             await deleteCartItemApi(productId);
-            setCart(cart => {
-                serverCart.current = cart.items.filter((el) => { return el.productId !== productId; })
-                return {
-                    items: cart.items.filter((el) => { return el.productId !== productId; }),
-                    loaded: true
-                }
-            });
+            if (reqversion === version.current) {
+                setCart(cart => {
+                    serverCart.current = cart.items.filter((el) => { return el.productId !== productId; })
+                    return {
+                        items: cart.items.filter((el) => { return el.productId !== productId; }),
+                        loaded: true
+                    }
+                });
+                version.current++;
+            }
         } catch (e) {
             console.error(e);
             setCart({
@@ -111,14 +125,24 @@ export function CartContextProvider({ children }) {
     }
 
     async function deleteAll() {
+        const reqversion=version.current;
+        for (const id in debounceActionTimers.current) {
+            clearTimeout(debounceActionTimers.current[id]);
+            debounceActionTimers.current[id] = undefined;
+        }
         try {
             await Promise.all(cart.items.map((el) => deleteCartItemApi(el.productId)));
-            setCart({
-                items: [],
-                loaded: true
-            });
+            if (reqversion === version.current) {
+                setCart({
+                    items: [],
+                    loaded: true
+                });
+                serverCart.current=[];
+                version.current++;
+            }
         } catch (e) {
             console.error(e);
+            setTimeout(()=>location.reload(),500)
             return Promise.reject(e);
         }
     }
@@ -128,6 +152,7 @@ export function CartContextProvider({ children }) {
             items: [],
             loaded: true
         })
+        serverCart.current=[];
     }
 
     const debounceActionTimers = useRef({});
@@ -137,7 +162,7 @@ export function CartContextProvider({ children }) {
             if (el.productId !== id) return el;
             ok = 1;
             if (newCartItem) return newCartItem;
-        })];
+        }).filter(el => el)];
         if (!ok && newCartItem) newCartItems = [newCartItem, ...newCartItems];
         setCart({
             items: newCartItems,
@@ -155,7 +180,7 @@ export function CartContextProvider({ children }) {
             if (!newCartItem && prevCartItem) requestPromise = deleteCartItem(id);
             else if (newCartItem) {
                 if (prevCartItem) requestPromise = updateCartItem(newCartItem.product, {
-                    quantity: newCartItem.quantity, 
+                    quantity: newCartItem.quantity,
                     deliveryOptionId: newCartItem.deliveryOptionId
                 });
                 else requestPromise = addCartItem(newCartItem.product, newCartItem.quantity);

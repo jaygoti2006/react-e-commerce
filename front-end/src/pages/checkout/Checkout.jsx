@@ -9,12 +9,21 @@ import ErrorFetchFailed from '../error/ErrorFetchFailed';
 import ToastContext from '../../contexts/ToastContext';
 
 export default function Checkout() {
-    const [deliveryOptions, setDeliveryOptions] = useState([]);
+    const [deliveryOptions, setDeliveryOptions] = useState({
+        data: [],
+        status: 0
+    });
     const { cart, deleteAll } = useContext(CartContext);
     const { showToast } = useContext(ToastContext);
 
     useEffect(() => {
-        getDeliveryOptionsApi().then(data => { setDeliveryOptions(data) });
+        getDeliveryOptionsApi().then(data => { setDeliveryOptions({ data: data, status: 1 }) }).catch(() => {
+            showToast({
+                type: "error",
+                message: "Failed to load delivery options!"
+            });
+            setDeliveryOptions({ data: [], status: -1 });
+        });
     }, []);
 
     const payment = useMemo(() => {
@@ -22,7 +31,7 @@ export default function Checkout() {
         let shipping = 0;
         for (let el of cart.items) {
             base += el.quantity * el.product.priceCents;
-            const t = deliveryOptions.filter((d) => d.id === el.deliveryOptionId);
+            const t = deliveryOptions.data.filter((d) => d.id === el.deliveryOptionId);
             if (t.length !== 0) shipping += t[0].priceCents;
         }
         return {
@@ -50,7 +59,7 @@ export default function Checkout() {
             <link rel="icon" href="cart-favicon.png"></link>
             <CheckoutHeader />
 
-            {(cart.loaded) ?
+            {(cart.loaded && deliveryOptions.status!==-1) ?
                 <>
                     <button onClick={handleClear} className="flex items-center gap-2 fixed bottom-10 right-10 btn-primary text-[16px] px-4 py-2.5 rounded-full" >
                         <svg className="fill-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 1024 1024"><path d="M352 192V95.936a32 32 0 0 1 32-32h256a32 32 0 0 1 32 32V192h256a32 32 0 1 1 0 64H96a32 32 0 0 1 0-64h256zm64 0h192v-64H416v64zM192 960a32 32 0 0 1-32-32V256h704v672a32 32 0 0 1-32 32H192zm224-192a32 32 0 0 0 32-32V416a32 32 0 0 0-64 0v320a32 32 0 0 0 32 32zm192 0a32 32 0 0 0 32-32V416a32 32 0 0 0-64 0v320a32 32 0 0 0 32 32z" /></svg>

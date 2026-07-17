@@ -9,7 +9,7 @@ export default function CartItem({ cartItem: { product, quantity, deliveryOption
     const [updateEnable, setUpdateEnable] = useState(false);
     const updateInputRef = useRef(null);
     const currDeliveryOption = useMemo(() => {
-        const res = deliveryOptions.filter((d) => d.id === deliveryOptionId);
+        const res = deliveryOptions.data.filter((d) => d.id === deliveryOptionId);
         if (res.length === 0) return null;
         return res[0];
     }, [deliveryOptionId, deliveryOptions]);
@@ -65,7 +65,7 @@ export default function CartItem({ cartItem: { product, quantity, deliveryOption
                 <fieldset className="w-75 shrink-0 flex flex-col gap-2">
                     <legend className="font-bold">Choose a delivery option:</legend>
                     <div className="flex flex-col gap-3">
-                        {deliveryOptions.map((el) => {
+                        {deliveryOptions.data.map((el) => {
                             return <DeliveryOption deliveryOptions={deliveryOptions} deliveryOption={el} product={product} key={el.id} currDeliveryOption={currDeliveryOption} />;
                         })}
                     </div>
