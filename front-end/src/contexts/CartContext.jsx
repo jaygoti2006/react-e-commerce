@@ -62,10 +62,10 @@ export function CartContextProvider({ children }) {
             console.error(e);
             setCart(cart => {
                 return {
-                    items: cart.items.map(el=>{
-                        if(el.productId!==product.id) return el;
-                        if(serverCart.current[product.id]) return serverCart.current[product.id];
-                    }).filter(el=>el),
+                    items: cart.items.map(el => {
+                        if (el.productId !== product.id) return el;
+                        if (serverCart.current[product.id]) return serverCart.current[product.id];
+                    }).filter(el => el),
                     loaded: true
                 }
             });
@@ -101,10 +101,10 @@ export function CartContextProvider({ children }) {
             console.error(e);
             setCart(cart => {
                 return {
-                    items: cart.items.map(el=>{
-                        if(el.productId!==product.id) return el;
-                        if(serverCart.current[product.id]) return serverCart.current[product.id];
-                    }).filter(el=>el),
+                    items: cart.items.map(el => {
+                        if (el.productId !== product.id) return el;
+                        if (serverCart.current[product.id]) return serverCart.current[product.id];
+                    }).filter(el => el),
                     loaded: true
                 }
             });
@@ -131,10 +131,10 @@ export function CartContextProvider({ children }) {
             console.error(e);
             setCart(cart => {
                 return {
-                    items: cart.items.map(el=>{
-                        if(el.productId!==productId) return el;
-                        if(serverCart.current[productId]) return serverCart.current[productId];
-                    }).filter(el=>el),
+                    items: cart.items.map(el => {
+                        if (el.productId !== productId) return el;
+                        if (serverCart.current[productId]) return serverCart.current[productId];
+                    }).filter(el => el),
                     loaded: true
                 }
             });
@@ -202,10 +202,12 @@ export function CartContextProvider({ children }) {
             }
             else if (newCartItem) {
                 if (prevCartItem) {
-                    requestPromise = updateCartItem(newCartItem.product, {
-                        quantity: newCartItem.quantity,
-                        deliveryOptionId: newCartItem.deliveryOptionId
-                    });
+                    if (prevCartItem.quantity !== newCartItem.quantity && prevCartItem.deliveryOptionId !== newCartItem.deliveryOptionId) {
+                        requestPromise = updateCartItem(newCartItem.product, {
+                            quantity: newCartItem.quantity,
+                            deliveryOptionId: newCartItem.deliveryOptionId
+                        });
+                    }
                     if (prevCartItem.quantity !== newCartItem.quantity && prevCartItem.deliveryOptionId !== newCartItem.deliveryOptionId) {
                         successMessage = "Updated quantity and delivery option!";
                         failureMessage = "Failed updating quantity and delivery option!";
