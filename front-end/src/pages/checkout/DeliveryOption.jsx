@@ -15,7 +15,7 @@ export default function DeliveryOption({ deliveryOption: { id, priceCents, deliv
             deliveryOptionId: id
         };
 
-        requestDebounceAction(product.id, newCartItem, "Updating delivery option failed!", "Updated delivery option!");
+        requestDebounceAction(product.id, newCartItem);
     }
 
     return (

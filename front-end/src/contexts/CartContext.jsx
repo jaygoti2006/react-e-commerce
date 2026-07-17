@@ -11,14 +11,14 @@ export function CartContextProvider({ children }) {
         items: [],
         loaded: true
     });
-    
+
     const { showToast } = useContext(ToastContext);
-    const serverCart = useRef([]);
-    const version = useRef(0);
+    const serverCart = useRef({});
+    const version = useRef({});
 
     useEffect(() => {
         getCartItemsApi().then(data => {
-            serverCart.current = data;
+            for (const el of data) serverCart.current[el.productId] = el;
             setCart({
                 items: data,
                 loaded: true
@@ -39,9 +39,10 @@ export function CartContextProvider({ children }) {
 
     async function updateCartItem(product, options) {
         try {
-            const reqversion=version.current;
+            if(version.current[product.id]===undefined) version.current[product.id]=0;
+            const reqversion = version.current[product.id];
             const data = await updateCartItemApi(product.id, options);
-            if (reqversion === version.current) {
+            if (reqversion === version.current[product.id]) {
                 setCart(cart => {
                     const newItems = cart.items.map((el) => {
                         if (el.productId !== product.id) {
@@ -49,18 +50,20 @@ export function CartContextProvider({ children }) {
                         }
                         return { ...data, product };
                     });
-                    serverCart.current = newItems;
+                    serverCart.current[product.id] = { ...data, product };
                     return {
                         items: newItems,
                         loaded: true
                     }
                 });
-                version.current++;
+                version.current[product.id]++;
             }
         } catch (e) {
             console.error(e);
+            const items = [];
+            for (const value of Object.values(serverCart.current)) if (value) items.push(value);
             setCart({
-                items: serverCart.current,
+                items: items,
                 loaded: true
             });
             return Promise.reject(e);
@@ -69,9 +72,10 @@ export function CartContextProvider({ children }) {
 
     async function addCartItem(product, quantity) {
         try {
-            const reqversion=version.current;
+            if(version.current[product.id]===undefined) version.current[product.id]=0;
+            const reqversion = version.current[product.id];
             const data = await addCartItemApi(product.id, quantity);
-            if (reqversion === version.current) {
+            if (reqversion === version.current[product.id]) {
                 setCart(cart => {
                     let ok = 0;
                     let newItems = cart.items.map((el) => {
@@ -82,18 +86,20 @@ export function CartContextProvider({ children }) {
                         return { ...data, product };
                     });
                     if (!ok) newItems = [{ ...data, product }, ...newItems];
-                    serverCart.current = newItems;
+                    serverCart.current[product.id] = { ...data, product };
                     return {
                         items: newItems,
                         loaded: true
                     }
                 });
-                version.current++;
+                version.current[product.id]++;
             }
         } catch (e) {
             console.error(e);
+            const items = [];
+            for (const value of Object.values(serverCart.current)) if (value) items.push(value);
             setCart({
-                items: serverCart.current,
+                items: items,
                 loaded: true
             });
             return Promise.reject(e);
@@ -102,22 +108,25 @@ export function CartContextProvider({ children }) {
 
     async function deleteCartItem(productId) {
         try {
-            const reqversion=version.current;
+            if(version.current[productId]===undefined) version.current[productId]=0;
+            const reqversion = version.current[productId];
             await deleteCartItemApi(productId);
-            if (reqversion === version.current) {
+            if (reqversion === version.current[productId]) {
                 setCart(cart => {
-                    serverCart.current = cart.items.filter((el) => { return el.productId !== productId; })
+                    serverCart.current[productId] = undefined;
                     return {
                         items: cart.items.filter((el) => { return el.productId !== productId; }),
                         loaded: true
                     }
                 });
-                version.current++;
+                version.current[productId]++;
             }
         } catch (e) {
             console.error(e);
+            const items = [];
+            for (const value of Object.values(serverCart.current)) if (value) items.push(value);
             setCart({
-                items: serverCart.current,
+                items: items,
                 loaded: true
             });
             return Promise.reject(e);
@@ -125,24 +134,21 @@ export function CartContextProvider({ children }) {
     }
 
     async function deleteAll() {
-        const reqversion=version.current;
-        for (const id in debounceActionTimers.current) {
+        for (const id of Object.keys(debounceActionTimers.current)) {
             clearTimeout(debounceActionTimers.current[id]);
             debounceActionTimers.current[id] = undefined;
         }
         try {
             await Promise.all(cart.items.map((el) => deleteCartItemApi(el.productId)));
-            if (reqversion === version.current) {
-                setCart({
-                    items: [],
-                    loaded: true
-                });
-                serverCart.current=[];
-                version.current++;
-            }
+            setCart({
+                items: [],
+                loaded: true
+            });
+            serverCart.current = {};
+            for (let id of Object.keys(version.current)) version.current[id]++;
         } catch (e) {
             console.error(e);
-            setTimeout(()=>location.reload(),500)
+            setTimeout(() => location.reload(), 500)
             return Promise.reject(e);
         }
     }
@@ -152,11 +158,11 @@ export function CartContextProvider({ children }) {
             items: [],
             loaded: true
         })
-        serverCart.current=[];
+        serverCart.current = {};
     }
 
     const debounceActionTimers = useRef({});
-    function requestDebounceAction(id, newCartItem, failureMessage, successMessage, delay = 300) {
+    function requestDebounceAction(id, newCartItem, delay = 300) {
         let ok = 0;
         let newCartItems = [...cart.items.map(el => {
             if (el.productId !== id) return el;
@@ -168,28 +174,54 @@ export function CartContextProvider({ children }) {
             items: newCartItems,
             loaded: true
         })
-        if (successMessage) showToast({
-            message: successMessage,
-            type: "success"
-        });
 
         clearTimeout(debounceActionTimers.current[id]);
         debounceActionTimers.current[id] = setTimeout(() => {
-            const prevCartItem = serverCart.current.find(el => el.productId === id);
+            const prevCartItem = serverCart.current[id];
             let requestPromise;
-            if (!newCartItem && prevCartItem) requestPromise = deleteCartItem(id);
+            let successMessage, failureMessage;
+
+            if (!newCartItem && prevCartItem) {
+                requestPromise = deleteCartItem(id);
+                successMessage = "Removed item from cart!";
+                failureMessage = "Failed removing item from cart!";
+            }
             else if (newCartItem) {
-                if (prevCartItem) requestPromise = updateCartItem(newCartItem.product, {
-                    quantity: newCartItem.quantity,
-                    deliveryOptionId: newCartItem.deliveryOptionId
-                });
-                else requestPromise = addCartItem(newCartItem.product, newCartItem.quantity);
+                if (prevCartItem) {
+                    requestPromise = updateCartItem(newCartItem.product, {
+                        quantity: newCartItem.quantity,
+                        deliveryOptionId: newCartItem.deliveryOptionId
+                    });
+                    if (prevCartItem.quantity !== newCartItem.quantity && prevCartItem.deliveryOptionId !== newCartItem.deliveryOptionId) {
+                        successMessage = "Updated quantity and delivery option!";
+                        failureMessage = "Failed updating quantity and delivery option!";
+                    } else if (prevCartItem.quantity !== newCartItem.quantity) {
+                        successMessage = "Updated quantity of item!";
+                        failureMessage = "Failed updating quantity of item!";
+                    } else if (prevCartItem.deliveryOptionId !== newCartItem.deliveryOptionId) {
+                        successMessage = "Updated delivery option of item!";
+                        failureMessage = "Failed updating delivery option of item!";
+                    }
+                } else {
+                    requestPromise = addCartItem(newCartItem.product, newCartItem.quantity);
+                    successMessage = "Added item to cart!";
+                    failureMessage = "Failed adding item to cart!";
+                }
             }
 
-            requestPromise.catch(() => showToast({
-                message: failureMessage,
-                type: "error"
-            }));
+            if (requestPromise) {
+                requestPromise.then(() => {
+                    if (successMessage) showToast({
+                        message: successMessage,
+                        type: "success"
+                    });
+                }).catch(() => {
+                    if (failureMessage) showToast({
+                        message: failureMessage,
+                        type: "error"
+                    });
+                });
+            }
 
         }, delay);
     }

@@ -22,7 +22,7 @@ export default function ProductCard({ product: { image, name, rating, priceCents
                 deliveryOptionId: (currCartItem) ? currCartItem.deliveryOptionId : "1"
             };
 
-            requestDebounceAction(product.id, newCartItem, "Failed adding to cart!");
+            requestDebounceAction(product.id, newCartItem);
         }
     }
 
@@ -35,7 +35,7 @@ export default function ProductCard({ product: { image, name, rating, priceCents
             deliveryOptionId: (currCartItem) ? currCartItem.deliveryOptionId : "1"
         };
 
-        requestDebounceAction(product.id, newCartItem, "Failed removing from cart!");
+        requestDebounceAction(product.id, newCartItem);
     }
 
     return (

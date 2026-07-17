@@ -32,12 +32,12 @@ export default function CartItem({ cartItem: { product, quantity, deliveryOption
                 deliveryOptionId: currCartItem.deliveryOptionId
             };
 
-            requestDebounceAction(product.id, newCartItem, "Updating quantity failed!", "Updated quantity of item!");
+            requestDebounceAction(product.id, newCartItem);
         }
     }
 
     function handleDelete() {
-        requestDebounceAction(product.id, null, "Removing item failed!", "Removed item from cart!");
+        requestDebounceAction(product.id, null);
     }
 
     function handleKeyDown(e) {
