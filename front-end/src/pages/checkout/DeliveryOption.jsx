@@ -2,20 +2,20 @@ import { useContext } from 'react';
 import convertMoney from '../../utils/money';
 import CartContext from '../../contexts/CartContext';
 import getDate from '../../utils/getDate';
-import ToastContext from '../../contexts/ToastContext';
 
-export default function DeliveryOption({ deliveryOption: {id, priceCents, deliveryDays} , product, currDeliveryOption }) {
-    const { updateCartItem } = useContext(CartContext);
-    const { showToast } = useContext(ToastContext);
+export default function DeliveryOption({ deliveryOption: { id, priceCents, deliveryDays }, product, currDeliveryOption }) {
+    const { cart, requestDebounceAction } = useContext(CartContext);
 
     function handleChange() {
-        updateCartItem(product,{dId: id}).then(()=>showToast({
-            type: "success",
-            message: "Updated delivery option!"
-        })).catch(()=>showToast({
-            type: "error",
-            message: "Updating delivery option failed!"
-        }));
+        const currCartItem = cart.items.find(el => el.productId === product.id);
+        const newCartItem = {
+            product,
+            productId: product.id,
+            quantity: currCartItem.quantity,
+            deliveryOptionId: id
+        };
+
+        requestDebounceAction(product.id, newCartItem, "Updating delivery option failed!", "Updated delivery option!");
     }
 
     return (

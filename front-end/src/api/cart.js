@@ -26,7 +26,7 @@ export async function updateCartItemApi(productId, options) {
     try {
         const obj = {};
         if (options.quantity) obj.quantity = options.quantity;
-        if (options.dId) obj.deliveryOptionId = options.dId;
+        if (options.deliveryOptionId) obj.deliveryOptionId = options.deliveryOptionId;
 
         const data = await api(`/api/cart-items/${productId}`, {
             method: "PUT",

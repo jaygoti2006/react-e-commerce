@@ -1,14 +1,12 @@
 import convertMoney from '../../utils/money';
 import { useContext } from 'react';
 import CartContext from '../../contexts/CartContext';
-import ToastContext from '../../contexts/ToastContext';
 
 const limit = 10;
 
 export default function ProductCard({ product: { image, name, rating, priceCents, id }, product }) {
-    const { cart, updateCartItem, deleteCartItem, addCartItem } = useContext(CartContext);
-    const { showToast } = useContext(ToastContext);
-    const currQuantity = function(){
+    const { cart, requestDebounceAction } = useContext(CartContext);
+    const currQuantity = function () {
         const t = cart.items.find((el) => el.productId === id);
         if (t) return t.quantity;
         return 0;
@@ -16,26 +14,28 @@ export default function ProductCard({ product: { image, name, rating, priceCents
 
     function handleAdd() {
         if (currQuantity < limit) {
-            if (currQuantity !== 0) updateCartItem(product, { quantity: currQuantity + 1 }).catch(() => showToast({
-                message: "Failed adding to cart!",
-                type: "error"
-            }));
-            else addCartItem(product, 1).catch(() => showToast({
-                message: "Failed adding to cart!",
-                type: "error"
-            }));
+            const currCartItem = cart.items.find(el => el.productId === product.id);
+            const newCartItem = {
+                product,
+                productId: product.id,
+                quantity: currQuantity + 1,
+                deliveryOptionId: (currCartItem) ? currCartItem.deliveryOptionId : "1"
+            };
+
+            requestDebounceAction(product.id, newCartItem, "Failed adding to cart!");
         }
     }
 
     function handleRemove() {
-        if (currQuantity > 1) updateCartItem(product, { quantity: currQuantity - 1 }).catch(() => showToast({
-            message: "Failed removing from cart!",
-            type: "error"
-        }));
-        else deleteCartItem(product.id).catch(() => showToast({
-            message: "Failed removing from cart!",
-            type: "error"
-        }));
+        const currCartItem = cart.items.find(el => el.productId === product.id);
+        const newCartItem = (currQuantity===1) ? null : {
+            product,
+            productId: product.id,
+            quantity: currQuantity - 1,
+            deliveryOptionId: (currCartItem) ? currCartItem.deliveryOptionId : "1"
+        };
+
+        requestDebounceAction(product.id, newCartItem, "Failed removing from cart!");
     }
 
     return (

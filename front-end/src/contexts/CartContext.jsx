@@ -1,5 +1,6 @@
-import { createContext, useEffect, useMemo, useState } from "react";
+import { createContext, useEffect, useMemo, useState, useRef, useContext } from "react";
 import { getCartItemsApi, updateCartItemApi, addCartItemApi, deleteCartItemApi } from "../api/cart";
+import ToastContext from "./ToastContext";
 
 const CartContext = createContext();
 
@@ -10,9 +11,12 @@ export function CartContextProvider({ children }) {
         items: [],
         loaded: true
     });
+    const { showToast } = useContext(ToastContext);
+    const serverCart = useRef([]);
 
     useEffect(() => {
         getCartItemsApi().then(data => {
+            serverCart.current = data;
             setCart({
                 items: data,
                 loaded: true
@@ -41,6 +45,7 @@ export function CartContextProvider({ children }) {
                     }
                     return { ...data, product };
                 });
+                serverCart.current = newItems;
                 return {
                     items: newItems,
                     loaded: true
@@ -48,6 +53,10 @@ export function CartContextProvider({ children }) {
             });
         } catch (e) {
             console.error(e);
+            setCart({
+                items: serverCart.current,
+                loaded: true
+            });
             return Promise.reject(e);
         }
     };
@@ -65,6 +74,7 @@ export function CartContextProvider({ children }) {
                     return { ...data, product };
                 });
                 if (!ok) newItems = [{ ...data, product }, ...newItems];
+                serverCart.current = newItems;
                 return {
                     items: newItems,
                     loaded: true
@@ -72,6 +82,10 @@ export function CartContextProvider({ children }) {
             });
         } catch (e) {
             console.error(e);
+            setCart({
+                items: serverCart.current,
+                loaded: true
+            });
             return Promise.reject(e);
         }
     }
@@ -80,6 +94,7 @@ export function CartContextProvider({ children }) {
         try {
             await deleteCartItemApi(productId);
             setCart(cart => {
+                serverCart.current = cart.items.filter((el) => { return el.productId !== productId; })
                 return {
                     items: cart.items.filter((el) => { return el.productId !== productId; }),
                     loaded: true
@@ -87,6 +102,10 @@ export function CartContextProvider({ children }) {
             });
         } catch (e) {
             console.error(e);
+            setCart({
+                items: serverCart.current,
+                loaded: true
+            });
             return Promise.reject(e);
         }
     }
@@ -111,6 +130,45 @@ export function CartContextProvider({ children }) {
         })
     }
 
+    const debounceActionTimers = useRef({});
+    function requestDebounceAction(id, newCartItem, failureMessage, successMessage, delay = 300) {
+        let ok = 0;
+        let newCartItems = [...cart.items.map(el => {
+            if (el.productId !== id) return el;
+            ok = 1;
+            if (newCartItem) return newCartItem;
+        })];
+        if (!ok && newCartItem) newCartItems = [newCartItem, ...newCartItems];
+        setCart({
+            items: newCartItems,
+            loaded: true
+        })
+        if (successMessage) showToast({
+            message: successMessage,
+            type: "success"
+        });
+
+        clearTimeout(debounceActionTimers.current[id]);
+        debounceActionTimers.current[id] = setTimeout(() => {
+            const prevCartItem = serverCart.current.find(el => el.productId === id);
+            let requestPromise;
+            if (!newCartItem && prevCartItem) requestPromise = deleteCartItem(id);
+            else if (newCartItem) {
+                if (prevCartItem) requestPromise = updateCartItem(newCartItem.product, {
+                    quantity: newCartItem.quantity, 
+                    deliveryOptionId: newCartItem.deliveryOptionId
+                });
+                else requestPromise = addCartItem(newCartItem.product, newCartItem.quantity);
+            }
+
+            requestPromise.catch(() => showToast({
+                message: failureMessage,
+                type: "error"
+            }));
+
+        }, delay);
+    }
+
     return (
         <CartContext value={{
             cart,
@@ -119,7 +177,8 @@ export function CartContextProvider({ children }) {
             deleteCartItem,
             addCartItem,
             deleteAll,
-            clearCart
+            clearCart,
+            requestDebounceAction
         }}>
             {children}
         </CartContext>
